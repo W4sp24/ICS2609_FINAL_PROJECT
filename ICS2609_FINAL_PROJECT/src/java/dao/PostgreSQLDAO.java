@@ -2,34 +2,32 @@ package dao;
 
 import java.sql.*;
 import javax.servlet.ServletContext;
+import model.ActivityLog;
 
-public class PostgreSQLDAO {
-    private String url, user, pass, driver;
+public class PostgresQLDAO {
+    private String driver, url, user, pass;
 
-    public PostgreSQLDAO(ServletContext context) {
+    public PostgresQLDAO(ServletContext context) {
         this.driver = context.getInitParameter("Postgres_Driver");
         this.url = context.getInitParameter("Postgres_URL");
         this.user = context.getInitParameter("Postgres_User");
         this.pass = context.getInitParameter("Postgres_Pass");
     }
 
-    private Connection getConnection() throws Exception {
-        Class.forName(driver);
-        return DriverManager.getConnection(url, user, pass);
-    }
+    public void insertLog(ActivityLog log) {
+        String sql = "INSERT INTO ACTIVITY_LOGS (username, action, log_timestamp) VALUES (?, ?, CURRENT_TIMESTAMP)";
 
-    public void recordLog(String username, String activity, String module) {
-        String sql = "INSERT INTO ACTIVITY_LOGS (username, activity, sourceModule) VALUES (?, ?, ?)";
-        try (Connection conn = getConnection(); 
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            pstmt.setString(1, username);
-            pstmt.setString(2, activity);
-            pstmt.setString(3, module);
-            pstmt.executeUpdate();
+            ps.setString(1, log.getUsername()); 
+            ps.setString(2, log.getAction());  
             
-        } catch (Exception e) {
-            e.printStackTrace(); 
+            ps.executeUpdate();
+            System.out.println("Log entry recorded for: " + log.getUsername());
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
