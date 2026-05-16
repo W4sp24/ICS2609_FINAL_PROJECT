@@ -9,7 +9,6 @@ CREATE TABLE ACTIVITY_LOGS (
     sourceModule VARCHAR(50) NOT NULL
 );
 
--- Sample Data (Matching the @gmail.com format)
 INSERT INTO ACTIVITY_LOGS (username, activity, sourceModule) VALUES 
 ('admin1@gmail.com', 'System Setup', 'Database'),
 ('guest1@gmail.com', 'User Login', 'Auth');
