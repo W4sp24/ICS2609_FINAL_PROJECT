@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Course {
     private String c_id;
     private String teacher_id;
@@ -7,6 +10,9 @@ public class Course {
     private String description;
     private String status;
     private String created_at;
+    private List<User> enrolledStudents;
+    private List<Module> modules;
+    private List<Assignment> assignments;
 
     public Course() {}
 
@@ -27,6 +33,7 @@ public class Course {
 
     public String getCreated_at() { return created_at; }
     public void setCreated_at(String created_at) { this.created_at = created_at; }
+    
     public List<User> getEnrolledStudents() { return enrolledStudents; }
     public void setEnrolledStudents(List<User> students) { this.enrolledStudents = students; }
     public void addStudent(User student) { this.enrolledStudents.add(student); }

@@ -10,8 +10,7 @@ public class Module {
     private String description;
     private int order; 
     private String created_at;
-
-    private List<Material> materials;
+    private List materials;
 
     public Module() {
         this.materials = new ArrayList<>(); 

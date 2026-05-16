@@ -15,7 +15,6 @@ public class User {
 
     // --- 2. Relational Data (Lists belonging ONLY to this user) ---
     private List<Course> coursesTaught;
-    
     private List<Course> enrolledCourses;
     private List<Grade> myGrades;
     private List<Submission> mySubmissions;
