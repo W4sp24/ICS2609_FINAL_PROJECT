@@ -33,8 +33,7 @@
         <% if (authError != null) { %>
             <div class="error-msg"><%= authError %></div>
         <% } else { %>
-            <p>You do not have permission to access this page.<br>
-               Please contact your administrator if you believe this is an error.</p>
+            <p>You do not have permission to access this page.</p>
         <% } %>
         <a href="${pageContext.request.contextPath}/index.jsp" class="btn">Return to Login</a>
     </div>
