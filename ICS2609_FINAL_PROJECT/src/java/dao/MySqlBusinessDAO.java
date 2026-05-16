@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.*;
 import javax.servlet.ServletContext;
 import model.Course;
-
+//
 public class MySqlBusinessDAO {
     private String driver, url, user, pass;
 
