@@ -7,7 +7,7 @@ package dao;
 import java.sql.*;
 import javax.servlet.ServletContext;
 
-public class DerybyAuthDAO {
+public class DerbyAuthDAO {
     private String driver, url, user, pass;
 
     public DerbyAuthDAO(ServletContext context) {
@@ -41,4 +41,5 @@ public class DerybyAuthDAO {
             e.printStackTrace();
         }
         return role;
+    }
 }
