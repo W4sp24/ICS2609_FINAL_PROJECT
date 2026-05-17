@@ -4,7 +4,7 @@ import java.sql.*;
 import javax.servlet.ServletContext;
 import model.ActivityLog;
 
-public class PostgresQLDAO {
+public class PostgresQLDAO extends BaseDAO {
     private String driver, url, user, pass;
 
     public PostgresQLDAO(ServletContext context) {
@@ -29,5 +29,11 @@ public class PostgresQLDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    
+    
+    protected Connection getConnection() throws Exception{
+        Class.forName(driver);
+        return DriverManager.getConnection(url, user, pass);
     }
 }

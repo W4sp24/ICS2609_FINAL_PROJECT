@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Course {
     private String c_id;
     private String teacher_id;
@@ -8,7 +11,15 @@ public class Course {
     private String status;
     private String created_at;
 
-    public Course() {}
+    private List<User> enrolledStudents;
+    private List<Module> modules;
+    private List<Assignment> assignments;
+
+    public Course() {
+        this.enrolledStudents = new ArrayList<>();
+        this.modules = new ArrayList<>();
+        this.assignments = new ArrayList<>();
+    }
 
     public String getC_id() { return c_id; }
     public void setC_id(String c_id) { this.c_id = c_id; }

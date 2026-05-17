@@ -7,6 +7,9 @@ package listeners;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import dao.*;
+import java.util.HashSet;
+import javax.servlet.ServletContext;
 
 /**
  * Web application lifecycle listener.
@@ -18,6 +21,31 @@ public class AppContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         // initialize context params here such as key, credentials and others.
+       
+        
+        ServletContext context = sce.getServletContext();
+        
+        //database DAO objects initializations
+        
+        DAOFactory factory = new DAOFactory(context);
+        
+        context.setAttribute("DAOFactory", factory);
+        
+        /*
+        In any servler
+        Ex:
+          (kung anong DAO need mo) = (DAOFactory)getServletContext().getAttribute("DAOFactory");
+        
+        */
+        
+     
+        
+        
+        
+        
+        
+        
+        
         
     }
 

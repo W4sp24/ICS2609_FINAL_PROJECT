@@ -7,8 +7,8 @@ package dao;
 import java.sql.*;
 import javax.servlet.ServletContext;
 
-public class DerbyAuthDAO {
-    private String driver, url, user, pass;
+public class DerbyAuthDAO extends BaseDAO {
+    private final String driver, url, user, pass;
 
     public DerbyAuthDAO(ServletContext context) {
         this.driver = context.getInitParameter("Derby_Driver");
@@ -17,7 +17,7 @@ public class DerbyAuthDAO {
         this.pass = context.getInitParameter("Derby_Pass");
     }
 
-    private Connection getConnection() throws Exception {
+    protected Connection getConnection() throws Exception {
         Class.forName(driver);
         return DriverManager.getConnection(url, user, pass);
     }
