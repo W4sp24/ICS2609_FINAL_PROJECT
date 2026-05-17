@@ -7,6 +7,8 @@ package listeners;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import dao.*;
+import javax.servlet.ServletContext;
 
 /**
  * Web application lifecycle listener.
@@ -18,6 +20,21 @@ public class AppContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         // initialize context params here such as key, credentials and others.
+       
+        
+        ServletContext context = sce.getServletContext();
+        
+        //database DAO objects initializations
+        MySqlBusinessDAO businessDb = new MySqlBusinessDAO(context);
+        DerbyAuthDAO authDb = new DerbyAuthDAO(context);
+        PostgresQLDAO logsDb = new PostgresQLDAO(context);
+        
+        
+        
+        
+        
+        
+        
         
     }
 

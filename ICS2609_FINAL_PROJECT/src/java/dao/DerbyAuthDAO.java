@@ -8,7 +8,7 @@ import java.sql.*;
 import javax.servlet.ServletContext;
 
 public class DerbyAuthDAO {
-    private String driver, url, user, pass;
+    private final String driver, url, user, pass;
 
     public DerbyAuthDAO(ServletContext context) {
         this.driver = context.getInitParameter("Derby_Driver");

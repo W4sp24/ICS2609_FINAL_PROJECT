@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/dao/MySqlBusinessDAO.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/controller/LoginServlet.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/business/AuthService.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/business/PdfReportBuilder.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/listeners/AppContextListener.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/dao/PostgresQLDAO.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/model/ActivityLog.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/controller/ReportServlet.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/model/User.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/controller/LogoutServlet.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/model/Course.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/dao/DerbyAuthDAO.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/src/java/util/SecurityUtil.java</file>
+            <file>file:/C:/Users/ethan/Documents/NetBeansProjects/ICS2609_FINAL_PROJECT/ICS2609_FINAL_PROJECT/web/index.html</file>
+        </group>
+    </open-files>
 </project-private>
