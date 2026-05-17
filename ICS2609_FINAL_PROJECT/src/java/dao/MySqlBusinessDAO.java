@@ -13,7 +13,7 @@ import model.Module;
 import model.Submission;
 import model.User;
 
-public class MySqlBusinessDAO {
+public class MySqlBusinessDAO extends BaseDAO {
     private final String driver, url, user, pass;
 
     public MySqlBusinessDAO(ServletContext context) {
@@ -23,7 +23,7 @@ public class MySqlBusinessDAO {
         this.pass = context.getInitParameter("MySQL_Pass");
     }
 
-    private Connection getConnection() throws Exception {
+    protected Connection getConnection() throws Exception {
         Class.forName(driver);
         return DriverManager.getConnection(url, user, pass);
     }

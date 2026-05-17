@@ -8,6 +8,7 @@ package listeners;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import dao.*;
+import java.util.HashSet;
 import javax.servlet.ServletContext;
 
 /**
@@ -25,9 +26,19 @@ public class AppContextListener implements ServletContextListener {
         ServletContext context = sce.getServletContext();
         
         //database DAO objects initializations
-        MySqlBusinessDAO businessDb = new MySqlBusinessDAO(context);
-        DerbyAuthDAO authDb = new DerbyAuthDAO(context);
-        PostgresQLDAO logsDb = new PostgresQLDAO(context);
+        
+        DAOFactory factory = new DAOFactory(context);
+        
+        context.setAttribute("DAOFactory", factory);
+        
+        /*
+        In any servler
+        Ex:
+          (kung anong DAO need mo) = (DAOFactory)getServletContext().getAttribute("DAOFactory");
+        
+        */
+        
+     
         
         
         
