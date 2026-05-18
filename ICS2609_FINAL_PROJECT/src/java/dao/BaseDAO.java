@@ -4,14 +4,13 @@
  * and open the template in the editor.
  */
 package dao;
-
+import java.sql.Connection;
 /**
  *
  * @author ethan
  */
-public class DerybyAuthDAO {
+abstract class BaseDAO {
+    protected abstract Connection getConnection() throws Exception;
+    //wow design may design pattern ang bangis.
     
-    
-    
-    //data access layer for derby
 }

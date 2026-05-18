@@ -1,3 +1,9 @@
 /ICS2609_FINAL_PROJECT/nbproject/private/
 /ICS2609_FINAL_PROJECT/build/
 /ICS2609_FINAL_PROJECT/dist/
+build/
+dist/
+nbproject/private/
+*.class
+.DS_Store
+
