@@ -60,58 +60,16 @@ public class CaptchaServlet extends HttpServlet {
         }
 
         if (SecurityUtil.isBlank(recaptchaToken)) {
-            int newAttempts = SessionUtil.incrementCaptchaAttempts(session);
-            LOGGER.warning("CAPTCHA token missing. Attempts: " + newAttempts
-                    + " | IP: " + ipAddress);
-
-            if (authService != null) {
-                authService.logCaptchaFailure(ipAddress, newAttempts);
-            }
-
-            if (newAttempts >= SessionUtil.MAX_CAPTCHA_ATTEMPTS) {
-                SessionUtil.setCaptchaLockTimestamp(session);
-                if (authService != null) authService.logCaptchaLockout(ipAddress);
-
-                request.setAttribute("errorMessage",
-                        "Maximum CAPTCHA attempts reached. Please wait 5 minutes.");
-                request.getRequestDispatcher("captcha_error.jsp")
-                        .forward(request, response);
-                return;
-            }
-
-            request.setAttribute("errorMessage", "Please complete the CAPTCHA before logging in.");
-            request.setAttribute("attemptsLeft", SessionUtil.MAX_CAPTCHA_ATTEMPTS - newAttempts);
-            request.getRequestDispatcher("captcha_failed.jsp")
-                    .forward(request, response);
+            handleCaptchaFailure(request, response, session, authService, ipAddress,
+                    "Please complete the CAPTCHA before logging in.");
             return;
         }
 
         boolean captchaOk = CaptchaUtil.verify(secretKey, recaptchaToken);
 
         if (!captchaOk) {
-            int newAttempts = SessionUtil.incrementCaptchaAttempts(session);
-            LOGGER.warning("CAPTCHA verification failed. Attempts: " + newAttempts
-                    + " | IP: " + ipAddress);
-
-            if (authService != null) {
-                authService.logCaptchaFailure(ipAddress, newAttempts);
-            }
-
-            if (newAttempts >= SessionUtil.MAX_CAPTCHA_ATTEMPTS) {
-                SessionUtil.setCaptchaLockTimestamp(session);
-                if (authService != null) authService.logCaptchaLockout(ipAddress);
-
-                request.setAttribute("errorMessage",
-                        "Maximum CAPTCHA attempts reached. Please wait 5 minutes before trying again.");
-                request.getRequestDispatcher("captcha_error.jsp")
-                        .forward(request, response);
-                return;
-            }
-
-            request.setAttribute("errorMessage", "CAPTCHA verification failed. Please try again.");
-            request.setAttribute("attemptsLeft", SessionUtil.MAX_CAPTCHA_ATTEMPTS - newAttempts);
-            request.getRequestDispatcher("captcha_failed.jsp")
-                    .forward(request, response);
+            handleCaptchaFailure(request, response, session, authService, ipAddress,
+                    "CAPTCHA verification failed. Please try again.");
             return;
         }
 
@@ -129,5 +87,29 @@ public class CaptchaServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.sendRedirect(request.getContextPath() + "/index.jsp");
+    }
+
+    private void handleCaptchaFailure(HttpServletRequest request, HttpServletResponse response,
+                                       HttpSession session, AuthService authService,
+                                       String ipAddress, String errorMessage)
+            throws ServletException, IOException {
+
+        int attempts = SessionUtil.incrementCaptchaAttempts(session);
+        LOGGER.warning("CAPTCHA failure. Attempts: " + attempts + " | IP: " + ipAddress);
+
+        if (authService != null) authService.logCaptchaFailure(ipAddress, attempts);
+
+        if (attempts >= SessionUtil.MAX_CAPTCHA_ATTEMPTS) {
+            SessionUtil.setCaptchaLockTimestamp(session);
+            if (authService != null) authService.logCaptchaLockout(ipAddress);
+            request.setAttribute("errorMessage",
+                    "Maximum CAPTCHA attempts reached. Please wait 5 minutes before trying again.");
+            request.getRequestDispatcher("captcha_error.jsp").forward(request, response);
+            return;
+        }
+
+        request.setAttribute("errorMessage", errorMessage);
+        request.setAttribute("attemptsLeft", SessionUtil.MAX_CAPTCHA_ATTEMPTS - attempts);
+        request.getRequestDispatcher("captcha_failed.jsp").forward(request, response);
     }
 }

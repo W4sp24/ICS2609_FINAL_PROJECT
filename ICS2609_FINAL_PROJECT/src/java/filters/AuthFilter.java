@@ -79,27 +79,29 @@ public class AuthFilter implements Filter {
         response.setHeader("Pragma",        "no-cache");
         response.setDateHeader("Expires",   0);
 
+        AuthService authService = (AuthService) request.getServletContext()
+                .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
+
         // ── Check 1: Does a session exist? ────────────────────────────────────
         HttpSession session = request.getSession(false);
 
         if (session == null) {
-            // No session at all — could be first visit or expired session
-            LOGGER.info("No session found for request: " + requestUri + " | IP: " + ipAddress);
-            logAndRedirect(request, response, ipAddress, requestUri, "NO_SESSION",
-                    request.getContextPath() + "/session_expired.jsp");
+            LOGGER.info("No session for request: " + requestUri + " | IP: " + ipAddress);
+            if (authService != null) authService.logSessionExpired(ipAddress, requestUri);
+            response.sendRedirect(request.getContextPath() + "/session_expired.jsp");
             return;
         }
 
         // ── Check 2: Is the user authenticated? ───────────────────────────────
         if (!SessionUtil.isAuthenticated(request)) {
             LOGGER.warning("Unauthenticated access attempt: " + requestUri + " | IP: " + ipAddress);
-            logAndRedirect(request, response, ipAddress, requestUri, "UNAUTHENTICATED",
-                    request.getContextPath() + "/unauthorized.jsp");
+            if (authService != null)
+                authService.logUnauthorizedAccess("UNKNOWN", "UNKNOWN", ipAddress, requestUri);
+            response.sendRedirect(request.getContextPath() + "/unauthorized.jsp");
             return;
         }
 
         // ── Check 3: Has the session timed out based on login timestamp? ──────
-        // Tomcat invalidates by inactivity, but we also check absolute login age.
         Long loginTimestamp = (Long) session.getAttribute(SessionUtil.ATTR_LOGIN_TIME);
         if (loginTimestamp != null) {
             long sessionAgeMs = System.currentTimeMillis() - loginTimestamp;
@@ -108,13 +110,7 @@ public class AuthFilter implements Filter {
             if (sessionAgeMs > maxAgeMs) {
                 LOGGER.info("Session expired (age " + (sessionAgeMs / 1000) + "s) for: "
                         + SessionUtil.getUsername(request) + " | IP: " + ipAddress);
-
-                AuthService authService = (AuthService) request.getServletContext()
-                        .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
-                if (authService != null) {
-                    authService.logSessionExpired(ipAddress, requestUri);
-                }
-
+                if (authService != null) authService.logSessionExpired(ipAddress, requestUri);
                 SessionUtil.invalidateSession(request);
                 response.sendRedirect(request.getContextPath() + "/session_expired.jsp");
                 return;
@@ -128,22 +124,5 @@ public class AuthFilter implements Filter {
     @Override
     public void destroy() {
         LOGGER.info("AuthFilter destroyed.");
-    }
-
-    // ─── Helper ───────────────────────────────────────────────────────────────
-
-    private void logAndRedirect(HttpServletRequest request, HttpServletResponse response,
-                                 String ipAddress, String requestedUrl,
-                                 String activityType, String redirectUrl)
-            throws IOException {
-
-        AuthService authService = (AuthService) request.getServletContext()
-                .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
-
-        if (authService != null) {
-            authService.logUnauthorizedAccess("UNKNOWN", "UNKNOWN", ipAddress, requestedUrl);
-        }
-
-        response.sendRedirect(redirectUrl);
     }
 }

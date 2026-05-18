@@ -7,8 +7,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import dao.DAOFactory;
 import dao.MySqlBusinessDAO;
+import listeners.AppContextListener;
+import util.SessionUtil;
 
 @WebServlet(name = "AdminDashboardServlet", urlPatterns = {"/AdminDashboard"})
 public class AdminDashboardServlet extends HttpServlet {
@@ -18,13 +19,13 @@ public class AdminDashboardServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        if (session == null || !"ADMIN".equals(session.getAttribute("role"))) {
-            response.sendRedirect("login.jsp");
+        if (session == null || !SessionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
             return;
         }
 
-        DAOFactory factory = (DAOFactory) getServletContext().getAttribute("DAOFactory");
-        MySqlBusinessDAO dao = factory.getMySQLDAO();
+        MySqlBusinessDAO dao = (MySqlBusinessDAO) getServletContext()
+                .getAttribute(AppContextListener.MYSQL_DAO_KEY);
 
         request.setAttribute("totalStudents", dao.getAllStudents().size());
         request.setAttribute("totalCourses", dao.getAllCourses().size());

@@ -348,6 +348,29 @@ public class MySqlBusinessDAO extends BaseDAO {
         return getUsersByRole("student");
     }
 
+    public User getUserByEmail(String email) {
+        String sql = "SELECT * FROM users WHERE email = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User();
+                    u.setU_id(rs.getString("u_id"));
+                    u.setEmail(rs.getString("email"));
+                    u.setFirstName(rs.getString("first_name"));
+                    u.setLastName(rs.getString("last_name"));
+                    u.setAppRole(rs.getString("role"));
+                    u.setCreatedAt(rs.getString("created_at"));
+                    return u;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private List<User> getUsersByRole(String targetRole) {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM users WHERE role = ?";

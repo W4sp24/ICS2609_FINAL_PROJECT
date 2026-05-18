@@ -6,6 +6,7 @@
 package dao;
 import java.sql.*;
 import javax.servlet.ServletContext;
+import util.SecurityUtil;
 
 public class DerbyAuthDAO extends BaseDAO {
     private final String driver, url, user, pass;
@@ -24,13 +25,14 @@ public class DerbyAuthDAO extends BaseDAO {
 
     public String validateLogin(String username, String password) {
         String role = null;
+        String hashedPassword = SecurityUtil.hashPassword(password);
         String query = "SELECT role FROM USERS WHERE username = ? AND password = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
-            
+
             pstmt.setString(1, username);
-            pstmt.setString(2, password);
+            pstmt.setString(2, hashedPassword);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {

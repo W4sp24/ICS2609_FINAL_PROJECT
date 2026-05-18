@@ -2,6 +2,7 @@ package listeners;
 
 import business.AuthService;
 import dao.DerbyAuthDAO;
+import dao.MySqlBusinessDAO;
 import dao.PostgresQLDAO;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -13,16 +14,20 @@ import java.util.logging.Logger;
 public class AppContextListener implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(AppContextListener.class.getName());
     public static final String AUTH_SERVICE_KEY = "authService";
+    public static final String MYSQL_DAO_KEY    = "mysqlDAO";
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext ctx = sce.getServletContext();
         LOGGER.info("=== ICS2609 Course Management System — Application Starting ===");
 
-        DerbyAuthDAO authDAO = new DerbyAuthDAO(ctx);   
-        PostgresQLDAO logDAO = new PostgresQLDAO(ctx);
+        DerbyAuthDAO   authDAO  = new DerbyAuthDAO(ctx);
+        PostgresQLDAO  logDAO   = new PostgresQLDAO(ctx);
+        MySqlBusinessDAO mysqlDAO = new MySqlBusinessDAO(ctx);
 
-        AuthService authService = new AuthService(authDAO, logDAO);
+        ctx.setAttribute(MYSQL_DAO_KEY, mysqlDAO);
+
+        AuthService authService = new AuthService(authDAO, logDAO, mysqlDAO);
         ctx.setAttribute(AUTH_SERVICE_KEY, authService);
 
         String siteKey = ctx.getInitParameter("recaptchaSiteKey");

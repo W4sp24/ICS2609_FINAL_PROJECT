@@ -1,6 +1,7 @@
 package business;
 
 import dao.DerbyAuthDAO;
+import dao.MySqlBusinessDAO;
 import dao.PostgresQLDAO;
 import model.User;
 import util.SecurityUtil;
@@ -8,37 +9,42 @@ import java.util.logging.Logger;
 
 public class AuthService {
     private static final Logger LOGGER = Logger.getLogger(AuthService.class.getName());
-    private final DerbyAuthDAO  authDAO;
-    private final PostgresQLDAO logDAO;
+    private final DerbyAuthDAO     authDAO;
+    private final PostgresQLDAO    logDAO;
+    private final MySqlBusinessDAO mysqlDAO;
 
-    public AuthService(DerbyAuthDAO authDAO, PostgresQLDAO logDAO) {
-        this.authDAO = authDAO;
-        this.logDAO  = logDAO;
+    public AuthService(DerbyAuthDAO authDAO, PostgresQLDAO logDAO, MySqlBusinessDAO mysqlDAO) {
+        this.authDAO   = authDAO;
+        this.logDAO    = logDAO;
+        this.mysqlDAO  = mysqlDAO;
     }
 
-   public User login(String username, String plainPassword, String ipAddress) {
-    if (SecurityUtil.isBlank(username) || SecurityUtil.isBlank(plainPassword)) {
-        LOGGER.warning("Login attempt with blank credentials from IP: " + ipAddress);
-        logDAO.log(username, "LOGIN_FAIL_BLANK_INPUT", ipAddress, "UNKNOWN", "AuthService");
-        return null;
-    }
+    public User login(String username, String plainPassword, String ipAddress) {
+        if (SecurityUtil.isBlank(username) || SecurityUtil.isBlank(plainPassword)) {
+            LOGGER.warning("Login attempt with blank credentials from IP: " + ipAddress);
+            logDAO.log(username, "LOGIN_FAIL_BLANK_INPUT", ipAddress, "UNKNOWN", "AuthService");
+            return null;
+        }
 
-    String sanitizedUsername = SecurityUtil.sanitizeUsername(username);
-    String role = authDAO.validateLogin(sanitizedUsername, plainPassword);
+        String role = authDAO.validateLogin(username, plainPassword);
 
-    if (role != null) {
-        User user = new User();
-        user.setU_id(sanitizedUsername);
-        user.setAppRole(role);
-        LOGGER.info("Login SUCCESS: " + sanitizedUsername + " [" + role + "] from " + ipAddress);
-        logDAO.log(sanitizedUsername, "LOGIN_SUCCESS", ipAddress, role, "AuthService");
-        return user;
-    } else {
-        LOGGER.warning("Login FAILED for username: " + sanitizedUsername + " from IP: " + ipAddress);
-        logDAO.log(sanitizedUsername, "LOGIN_FAIL", ipAddress, "UNKNOWN", "AuthService");
-        return null;
+        if (role != null) {
+            User user = mysqlDAO.getUserByEmail(username);
+            if (user == null) {
+                LOGGER.warning("Derby auth passed but no MySQL user found for: " + username);
+                logDAO.log(username, "LOGIN_FAIL_NO_MYSQL_USER", ipAddress, role, "AuthService");
+                return null;
+            }
+            user.setAppRole(role);
+            LOGGER.info("Login SUCCESS: " + username + " [" + role + "] from " + ipAddress);
+            logDAO.log(username, "LOGIN_SUCCESS", ipAddress, role, "AuthService");
+            return user;
+        } else {
+            LOGGER.warning("Login FAILED for username: " + username + " from IP: " + ipAddress);
+            logDAO.log(username, "LOGIN_FAIL", ipAddress, "UNKNOWN", "AuthService");
+            return null;
+        }
     }
-}
     public void logout(String username, String role, String ipAddress) {
         LOGGER.info("Logout: " + username + " [" + role + "] from " + ipAddress);
         logDAO.log(username, "LOGOUT", ipAddress, role, "AuthService");

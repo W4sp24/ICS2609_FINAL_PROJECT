@@ -54,7 +54,6 @@ public class LoginServlet extends HttpServlet {
         User user = authService.login(username, rawPassword, ipAddress);
 
         if (user == null) {
-            LOGGER.warning("Login FAILED for username: " + username + " from IP: " + ipAddress);
             request.setAttribute("errorMessage", "Invalid username or password. Please try again.");
             request.setAttribute("username", SecurityUtil.sanitizeHtml(username));
             request.getRequestDispatcher("incorrect_password.jsp").forward(request, response);
