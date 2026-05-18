@@ -1,0 +1,235 @@
+@font-face {
+    font-family: 'Daruma';
+    src: url('../fonts/DarumadropOne-Regular.ttf') format('truetype');
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+#background {
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    background-image: url("../images/gradientbg3.png");
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+}
+.twilight{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:1;
+    pointer-events:none;
+}
+/* --------------------------------------------top nav bar/header */
+.top-bar{
+    width:100%;
+    height:75px;
+    background:#f5f5f5;
+    border-bottom-left-radius:65px;
+    border-bottom-right-radius:65px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 70px;
+    position:relative;
+    z-index:7;
+}
+.small-logo{
+    width:160px;
+    image-rendering:pixelated;
+}
+.nav-links{
+    display:flex;
+    gap:90px;
+}
+.nav-links a{
+    text-decoration:none;
+    color:#2d6f8f;
+    font-size:20px;
+    transition:0.2s ease;
+}
+.nav-links a:hover{
+    transform:translateY(-2px);
+}
+/* -------------------------------------------------main div*/
+.main-container{
+    width:100%;
+    height:calc(100vh - 75px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    z-index:6;
+    position:relative;
+}
+.main-logo{
+    width:760px;
+    margin-top:25px;
+    image-rendering:pixelated;
+    animation:floatLogo 3s ease-in-out infinite;
+}
+@keyframes floatLogo{
+    0%{
+        transform:translateY(0px);
+    }
+    50%{
+        transform:translateY(-8px);
+    }
+    100%{
+        transform:translateY(0px);
+    }
+}
+/* ---------------------------------------------login div */
+
+.login-container{
+    margin-top:-25px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+    transform:scale(0.68);
+    transform-origin:top center;
+    z-index:3;
+}
+.login-container h1{
+    color:white;
+    font-family:'Daruma', sans-serif;
+    font-size:72px;
+    letter-spacing:2px;
+    text-shadow:0px 5px 0px rgba(0,0,0,0.15);
+}
+.login-container p{
+    color:rgba(255,255,255,0.85);
+    font-size:28px;
+    margin-top:-10px;
+    margin-bottom:35px;
+}
+form{
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+}
+/* --------------------------------------------for inputs */
+.input-group{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+.input-group input{
+    width:300px;
+    height:48px;
+    border:none;
+    outline:none;
+    border-radius:50px;
+    background:rgba(255,255,255,0.92);
+    text-align:center;
+    font-size:18px;
+    letter-spacing:3px;
+    color:#2f5f79;
+    box-shadow:0 4px 8px rgba(0,0,0,0.08);
+}
+.input-group input::placeholder{
+    color:#2f5f79;
+    opacity:1;
+}
+/* --------------------------------------------buttons designs */
+.icon-btn{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    border:3px solid rgba(255,255,255,0.7);
+    background:transparent;
+    cursor:pointer;
+    transition:0.2s ease;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:0;
+}
+.icon-btn img{
+    width:22px;
+    height:22px;
+    object-fit:contain;
+    image-rendering:pixelated;
+}
+.icon-btn:hover{
+    transform:scale(1.08);
+    background:rgba(255,255,255,0.08);
+}
+/* -------------------------------------------organize later */
+
+@media screen and (max-width:900px){
+    .main-logo{
+        width:90%;
+    }
+    .login-container h1{
+        font-size:56px;
+    }
+    .input-group input{
+        width:260px;
+    }
+    .nav-links{
+        gap:30px;
+    }
+}
+.layer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.mountain.far {
+    width: 1526px;
+    left: 45%;
+    bottom: 0px;
+    z-index: 2;
+    animation: mountainRiseFar 2s ease-out;
+    animation-fill-mode: forwards;
+}
+.mountain.far.static {
+    animation: none;
+}
+.mountain.mid {
+    width: 1526px;
+    left: 55%;
+    bottom: -8px;
+    z-index: 3;
+    animation: mountainRiseMid 1.5s ease-out;
+    animation-fill-mode: forwards;
+}
+.mountain.mid.static {
+    animation: none;
+}
+.mountain.near {
+    width: 1526px;
+    bottom: -10px;
+    z-index: 4;
+    animation: mountainRiseNear 1s ease-out;
+    animation-fill-mode: forwards;
+}
+@keyframes mountainRiseFar {
+    from { transform: translateX(-50%) translateY(120px); }
+    to   { transform: translateX(-50%) translateY(0); }
+}
+@keyframes mountainRiseMid {
+    from { transform: translateX(-50%) translateY(90px); }
+    to   { transform: translateX(-50%) translateY(0); }
+}
+@keyframes mountainRiseNear {
+    from { transform: translateX(-50%) translateY(50px); }
+    to   { transform: translateX(-50%) translateY(0); }
+}
+.greenery {
+    width: 1536px;
+    bottom: 0px;
+    z-index: 5;
+}
