@@ -1,66 +1,82 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controller;
 
-import java.io.IOException;
+import business.AuthService;
+import listeners.AppContextListener;
+import model.User;
+import util.SecurityUtil;
+import util.SessionUtil;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import dao.DAOFactory;
-import dao.DerbyAuthDAO;
+import java.io.IOException;
+import java.util.logging.Logger;
 
-@WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
+@WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        request.getRequestDispatcher("login.jsp").forward(request, response);
-    }
+    private static final Logger LOGGER = Logger.getLogger(LoginServlet.class.getName());
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
+        AuthService authService = (AuthService) getServletContext()
+                .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
+        String ipAddress = SecurityUtil.getClientIp(request);
 
-        if (username == null || username.equals("") || password == null || password.equals("")) {
-            response.sendRedirect("login.jsp?error=1");
+        HttpSession preLoginSession = request.getSession(false);
+        if (preLoginSession == null || !SessionUtil.isCaptchaVerified(preLoginSession)) {
+            LOGGER.warning("Direct LoginServlet access without CAPTCHA from IP: " + ipAddress);
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
             return;
         }
 
-        DAOFactory factory = (DAOFactory) getServletContext().getAttribute("DAOFactory");
-        DerbyAuthDAO auth = factory.getDerbyDAO();
+        String rawUsername = request.getParameter("username");
+        String rawPassword = request.getParameter("password");
+        String username = SecurityUtil.sanitizeUsername(rawUsername);
 
-        String role = auth.validateLogin(username, password);
-
-        if (role == null) {
-            response.sendRedirect("login.jsp?error=1");
+        if (SecurityUtil.isBlank(username)) {
+            LOGGER.warning("Login attempt with blank username from IP: " + ipAddress);
+            request.setAttribute("errorMessage", "Username is required.");
+            request.getRequestDispatcher("incorrect_username.jsp").forward(request, response);
             return;
         }
 
-        HttpSession session = request.getSession();
-        session.setAttribute("role", role.toUpperCase());
-        session.setAttribute("username", username);
-        // TODO: call MySqlBusinessDAO.getUserByEmail(username) here once implemented
-        // and store u_id + MySQL role in session for use in course/grade/enrollment pages
-
-        switch (role.toUpperCase()) {
-            case "ADMIN":
-                response.sendRedirect("AdminDashboard");
-                break;
-            case "GUEST":
-                response.sendRedirect("studentDashboard.jsp");
-                break;
-            default:
-                response.sendRedirect("login.jsp?error=1");
+        if (SecurityUtil.isBlank(rawPassword)) {
+            LOGGER.warning("Login attempt with blank password for user: " + username);
+            request.setAttribute("errorMessage", "Password is required.");
+            request.getRequestDispatcher("incorrect_password.jsp").forward(request, response);
+            return;
         }
+
+        User user = authService.login(username, rawPassword, ipAddress);
+
+        if (user == null) {
+            LOGGER.warning("Login FAILED for username: " + username + " from IP: " + ipAddress);
+            request.setAttribute("errorMessage", "Invalid username or password. Please try again.");
+            request.setAttribute("username", SecurityUtil.sanitizeHtml(username));
+            request.getRequestDispatcher("incorrect_password.jsp").forward(request, response);
+            return;
+        }
+
+        HttpSession session = SessionUtil.createAuthenticatedSession(request, response, user);
+
+        LOGGER.info("Login SUCCESS: " + user.getEmail()
+                + " [" + user.getAppRole() + "] from " + ipAddress
+                + " | new sessionId: " + session.getId());
+
+        if ("admin".equalsIgnoreCase(user.getAppRole())) {
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard.jsp");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/guest/dashboard.jsp");
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect(request.getContextPath() + "/index.jsp");
     }
 }

@@ -70,7 +70,7 @@
             </div>
             <img src="images/flower-book.png" class="hero-image">
         </section>
-        <!--for showing stats,: only placeholders are here for now-->
+        <!--for showing stats,: placeholders pa lang-->
         <section class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">👤</div>
