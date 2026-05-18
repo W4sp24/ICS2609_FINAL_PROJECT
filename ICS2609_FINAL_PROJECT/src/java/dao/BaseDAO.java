@@ -11,6 +11,6 @@ import java.sql.Connection;
  */
 abstract class BaseDAO {
     protected abstract Connection getConnection() throws Exception;
-    //wow design may design pattern ang bangis.
+    //may design pattern ang bangis.
     
 }

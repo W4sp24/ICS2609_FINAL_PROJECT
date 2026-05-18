@@ -479,7 +479,6 @@ public class MySqlBusinessDAO extends BaseDAO {
 
     /**
      * Returns a single material by its primary key.
-     * Used to pre-populate material edit forms in the UI.
      */
     public Material getMaterialById(String matId) {
         String sql = "SELECT * FROM materials WHERE mat_id = ?";
@@ -507,9 +506,7 @@ public class MySqlBusinessDAO extends BaseDAO {
 
     /**
      * Returns all submissions with status='submitted' across every assignment in a course.
-     * Avoids the N+1 query pattern on a teacher's grading dashboard — a single JOIN
-     * replaces looping getSubmissionsByAssignment() per assignment.
-     * Used by teacher grading overview pages.
+
      */
     public List<Submission> getSubmissionsByCourse(String courseId) {
         List<Submission> submissions = new ArrayList<>();

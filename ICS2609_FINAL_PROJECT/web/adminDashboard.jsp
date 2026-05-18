@@ -22,16 +22,16 @@
             <img src="images/logo-small.png" class="sidebar-logo">
             <div class="sidebar-title">ADMIN PANEL</div>
             <nav class="sidebar-nav">
-                <a href="#" class="active">Dashboard</a>
-                <a href="#">Page 1</a>
-                <a href="#">Page 2</a>
-                <a href="#">Page 3</a>
-                <a href="#">Page 4</a>
+                <a href="AdminDashboard" class="active">Dashboard</a>
+                <a href="Course">Courses</a>
+                <a href="Grade">Grade Submissions</a>
+                <a href="UserManagement">Manage Students</a>
+                <a href="ReportServlet">Reports</a>
             </nav>
         </div>
         <div class="sidebar-bottom">
             <a href="#">Help</a>
-            <a href="login.jsp">Logout</a>
+            <a href="LogoutServlet">Logout</a>
         </div>
     </aside>
     <!--main dashboard-->
@@ -48,7 +48,7 @@
                     <!--part to put pfp if possible pero baka wag na ewan-->
                     <img src="images/!!insertProfilePicHere!!.png">
                     <div>
-                        <h4>Administrator</h4>
+                        <h4>${sessionScope.username}</h4>
                         <p>System Admin</p>
                     </div>
                 </div>
@@ -58,14 +58,14 @@
             <div class="hero-content">
                 <h1>
                     Welcome Back,<br>
-                    Insert Username Here pls
+                    ${sessionScope.username}
                 </h1>
                 <p>
-                    Lorem Ipsum Kinemerut
+                    Here's what's happening today.
                 </p>
                 <div class="hero-buttons">
-                    <button>Manage Users</button>
-                    <button>Generate Reports</button>
+                    <button onclick="location.href='UserManagement'">Manage Students</button>
+                    <button onclick="location.href='ReportServlet'">Generate Reports</button>
                 </div>
             </div>
             <img src="images/flower-book.png" class="hero-image">
@@ -75,28 +75,28 @@
             <div class="stat-card">
                 <div class="stat-icon">👤</div>
                 <div>
-                    <h2>###</h2>
+                    <h2>${totalStudents}</h2>
                     <p>Total Students</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📚</div>
                 <div>
-                    <h2>##</h2>
+                    <h2>${totalCourses}</h2>
                     <p>Courses</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">⭐</div>
                 <div>
-                    <h2>##%</h2>
+                    <h2>N/A</h2>
                     <p>Completion Rate</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📜</div>
                 <div>
-                    <h2>##</h2>
+                    <h2>N/A</h2>
                     <p>Reports</p>
                 </div>
             </div>
@@ -109,25 +109,12 @@
                     <button>View All</button>
                 </div>
                 <div class="activity-list">
+                    <%-- TODO: replace with c:forEach over activityLogs once PostgresQLDAO.getLogs() is implemented --%>
                     <div class="activity-item">
                         <div class="activity-avatar"></div>
                         <div>
-                            <h4>Maria Santos</h4>
-                            <p>Lorem ipsum kinemerut</p>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-avatar"></div>
-                        <div>
-                            <h4>Juan Dela Cruz</h4>
-                            <p>Lorem ipsum kinemerut</p>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-avatar"></div>
-                        <div>
-                            <h4>Ana Reyes</h4>
-                            <p>Lorem ipsum kinemerut</p>
+                            <h4>No recent activity</h4>
+                            <p>Activity log coming soon</p>
                         </div>
                     </div>
                 </div>
@@ -138,10 +125,10 @@
                     <h2>Quick Actions</h2>
                 </div>
                 <div class="quick-actions">
-                    <button>Add Student</button>
-                    <button>Create Course</button>
-                    <button>Send Announcement</button>
-                    <button>Backup System</button>
+                    <button onclick="location.href='UserManagement'">Manage Students</button>
+                    <button onclick="location.href='Course'">Manage Courses</button>
+                    <button onclick="location.href='Grade'">Grade Submissions</button>
+                    <button onclick="location.href='ReportServlet'">Generate Reports</button>
                 </div>
             </div>
         </section>
