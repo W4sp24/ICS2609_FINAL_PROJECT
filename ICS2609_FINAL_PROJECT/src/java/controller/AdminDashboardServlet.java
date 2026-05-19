@@ -31,7 +31,7 @@ public class AdminDashboardServlet extends HttpServlet {
         request.setAttribute("totalCourses", dao.getAllCourses().size());
 
 
-        request.getRequestDispatcher("adminDashboard.jsp").forward(request, response);
+        request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
     }
 
     @Override

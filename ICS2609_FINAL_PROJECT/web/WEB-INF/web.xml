@@ -39,6 +39,64 @@
     </context-param>
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 1b: JDBC Database Connection Parameters (FR-DBMS-006)      -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Apache Derby — authDB (user authentication) -->
+    <context-param>
+        <param-name>Derby_Driver</param-name>
+        <param-value>org.apache.derby.jdbc.ClientDriver</param-value>
+    </context-param>
+    <context-param>
+        <param-name>Derby_URL</param-name>
+        <param-value>jdbc:derby://localhost:1527/authDB</param-value>
+    </context-param>
+    <context-param>
+        <param-name>Derby_User</param-name>
+        <param-value>app</param-value>
+    </context-param>
+    <context-param>
+        <param-name>Derby_Pass</param-name>
+        <param-value>app</param-value>
+    </context-param>
+
+    <!-- MySQL — course_management_db (courses, modules, grades) -->
+    <context-param>
+        <param-name>MySQL_Driver</param-name>
+        <param-value>com.mysql.cj.jdbc.Driver</param-value>
+    </context-param>
+    <context-param>
+        <param-name>MySQL_URL</param-name>
+        <param-value>jdbc:mysql://localhost:3306/course_management_db</param-value>
+    </context-param>
+    <context-param>
+        <param-name>MySQL_User</param-name>
+        <param-value>root</param-value>
+    </context-param>
+    <context-param>
+        <param-name>MySQL_Pass</param-name>
+        <param-value>app</param-value>
+    </context-param>
+
+    <!-- PostgreSQL — course_logs (audit/activity logs) -->
+    <context-param>
+        <param-name>PostgreSQL_Driver</param-name>
+        <param-value>org.postgresql.Driver</param-value>
+    </context-param>
+    <context-param>
+        <param-name>PostgreSQL_URL</param-name>
+        <param-value>jdbc:postgresql://localhost:5432/course_logs</param-value>
+    </context-param>
+    <context-param>
+        <param-name>PostgreSQL_User</param-name>
+        <param-value>postgres</param-value>
+    </context-param>
+    <context-param>
+        <param-name>PostgreSQL_Pass</param-name>
+        <param-value>app</param-value>
+    </context-param>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
     <!-- SECTION 2: Session Configuration                                   -->
     <!-- 5-minute session timeout (FR-AUTH-006, SessionUtil constant)       -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
@@ -51,8 +109,7 @@
             <http-only>true</http-only>
             <!-- Secure: set to true when deployed over HTTPS in production -->
             <!-- <secure>true</secure> -->
-            <same-site>Strict</same-site>
-        </cookie-config>
+    </cookie-config>
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
@@ -147,19 +204,19 @@
 
     <error-page>
         <error-code>403</error-code>
-        <location>/unauthorized.jsp</location>
+        <location>/errors/unauthorized.jsp</location>
     </error-page>
     <error-page>
         <error-code>404</error-code>
-        <location>/error_404.jsp</location>
+        <location>/errors/error_404.jsp</location>
     </error-page>
     <error-page>
         <error-code>500</error-code>
-        <location>/error_500.jsp</location>
+        <location>/errors/error_500.jsp</location>
     </error-page>
     <error-page>
         <exception-type>java.lang.Exception</exception-type>
-        <location>/error_500.jsp</location>
+        <location>/errors/error_500.jsp</location>
     </error-page>
 
 </web-app>

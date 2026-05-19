@@ -6,7 +6,6 @@ import util.SecurityUtil;
 import util.SessionUtil;
 
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -44,7 +43,6 @@ import java.util.logging.Logger;
  * </filter-mapping>
  * --------------------------------------------------
  */
-@WebFilter(urlPatterns = {"/admin/*", "/ReportServlet"})
 public class RoleFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(RoleFilter.class.getName());
@@ -83,7 +81,7 @@ public class RoleFilter implements Filter {
             request.getSession(false)
                    .setAttribute("authError", "Access denied. Admin privileges are required.");
 
-            response.sendRedirect(request.getContextPath() + "/unauthorized.jsp");
+            response.sendRedirect(request.getContextPath() + "/errors/unauthorized.jsp");
             return;
         }
 

@@ -396,18 +396,12 @@ public class MySqlBusinessDAO extends BaseDAO {
             e.printStackTrace();
         }
         return users;
-    }
+    }   
 
-    // -------------------------------------------------------------------------
+
+
     // Supporting Read Methods (Teacher)
-    // -------------------------------------------------------------------------
 
-    /**
-     * Returns all courses owned by a specific teacher.
-     * This is the primary data source for the teacher dashboard — do not use
-     * getAllCourses() for teacher views, as it returns every course in the system.
-     * Used by any teacher-facing dashboard or course-list servlet.
-     */
     public List<Course> getCoursesByTeacher(String teacherId) {
         List<Course> courses = new ArrayList<>();
         String sql = "SELECT * FROM courses WHERE teacher_id = ?";
