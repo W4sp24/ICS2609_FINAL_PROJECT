@@ -32,7 +32,6 @@ public class GuestDashboardServlet extends HttpServlet {
 
         String username = SessionUtil.getUsername(request);
 
-        // Resolve real MySQL UUID — session u_id may be the email string due to known AuthService issue
         User mysqlUser = dao.getUserByEmail(username);
         if (mysqlUser == null) {
             response.sendRedirect(request.getContextPath() + "/index.jsp");

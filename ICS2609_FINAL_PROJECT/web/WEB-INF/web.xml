@@ -49,7 +49,7 @@
     </context-param>
     <context-param>
         <param-name>Derby_URL</param-name>
-        <param-value>jdbc:derby://localhost:1527/authDB</param-value>
+        <param-value>jdbc:derby://localhost:1527/LoginDB</param-value>
     </context-param>
     <context-param>
         <param-name>Derby_User</param-name>
@@ -80,19 +80,19 @@
 
     <!-- PostgreSQL — course_logs (audit/activity logs) -->
     <context-param>
-        <param-name>PostgreSQL_Driver</param-name>
+        <param-name>Postgres_Driver</param-name>
         <param-value>org.postgresql.Driver</param-value>
     </context-param>
     <context-param>
-        <param-name>PostgreSQL_URL</param-name>
-        <param-value>jdbc:postgresql://localhost:5432/course_logs</param-value>
+        <param-name>Postgres_URL</param-name>
+        <param-value>jdbc:postgresql://localhost:5432/postgres</param-value>
     </context-param>
     <context-param>
-        <param-name>PostgreSQL_User</param-name>
+        <param-name>Postgres_User</param-name>
         <param-value>postgres</param-value>
     </context-param>
     <context-param>
-        <param-name>PostgreSQL_Pass</param-name>
+        <param-name>Postgres_Pass</param-name>
         <param-value>app</param-value>
     </context-param>
 
