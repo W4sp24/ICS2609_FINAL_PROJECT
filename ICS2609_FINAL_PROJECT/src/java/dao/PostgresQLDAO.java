@@ -1,6 +1,8 @@
 package dao;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.ServletContext;
 import model.ActivityLog;
 
@@ -37,5 +39,30 @@ public class PostgresQLDAO extends BaseDAO {
 
     public void insertLog(ActivityLog log) {
         this.log(log.getUsername(), log.getAction(), log.getIpAddress(), log.getRole(), log.getSource());
+    }
+
+    public List<ActivityLog> getLogs(int limit) {
+        List<ActivityLog> logs = new ArrayList<>();
+        String sql = "SELECT * FROM activity_logs ORDER BY log_timestamp DESC LIMIT ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ActivityLog entry = new ActivityLog();
+                    entry.setLogId(rs.getInt("log_id"));
+                    entry.setUsername(rs.getString("username"));
+                    entry.setActivity(rs.getString("action"));
+                    entry.setIpAddress(rs.getString("ip_address"));
+                    entry.setUserRole(rs.getString("role"));
+                    entry.setModule(rs.getString("source"));
+                    entry.setActivityTime(rs.getTimestamp("log_timestamp"));
+                    logs.add(entry);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return logs;
     }
 }

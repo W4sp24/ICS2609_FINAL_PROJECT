@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="model.ActivityLog,java.util.List"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -87,17 +88,17 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">⭐</div>
+                <div class="stat-icon">🎓</div>
                 <div>
-                    <h2>N/A</h2>
-                    <p>Completion Rate</p>
+                    <h2>${totalTeachers}</h2>
+                    <p>Teachers</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📜</div>
                 <div>
-                    <h2>N/A</h2>
-                    <p>Reports</p>
+                    <h2>${mysqlRole}</h2>
+                    <p>Your Role</p>
                 </div>
             </div>
         </section>
@@ -109,14 +110,25 @@
                     <button>View All</button>
                 </div>
                 <div class="activity-list">
-                    <%-- TODO: replace with c:forEach over activityLogs once PostgresQLDAO.getLogs() is implemented --%>
+                    <%
+                        List<ActivityLog> logs = (List<ActivityLog>) request.getAttribute("recentLogs");
+                        if (logs == null || logs.isEmpty()) {
+                    %>
+                    <div class="activity-item">
+                        <div class="activity-avatar"></div>
+                        <div><h4>No recent activity</h4><p>No log entries yet</p></div>
+                    </div>
+                    <%  } else {
+                            for (ActivityLog log : logs) { %>
                     <div class="activity-item">
                         <div class="activity-avatar"></div>
                         <div>
-                            <h4>No recent activity</h4>
-                            <p>Activity log coming soon</p>
+                            <h4><%= log.getUsername() %> — <%= log.getAction() %></h4>
+                            <p><%= log.getActivityTime() %> | <%= log.getSource() %> | <%= log.getIpAddress() %></p>
                         </div>
                     </div>
+                    <%      }
+                        } %>
                 </div>
             </div>
             <!--lower planel for quick actions-->
