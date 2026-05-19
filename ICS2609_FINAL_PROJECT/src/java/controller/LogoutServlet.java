@@ -1,88 +1,81 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import business.AuthService;
+import listeners.AppContextListener;
+import util.SecurityUtil;
+import util.SessionUtil;
+
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
+ * FILE: controller/LogoutServlet.java
  *
- * @author ethan
+ * Handles user logout by invalidating the current session and
+ * redirecting to the login page.
+ *
+ * SECURITY NOTES:
+ *   - Session is fully invalidated (not just cleared) so Tomcat removes it.
+ *   - The logout event is recorded in the PostgreSQL activity log.
+ *   - After logout, the response includes Cache-Control headers to prevent
+ *     the browser from caching the previous authenticated pages.
+ *   - Redirect (not forward) is used so the browser issues a new GET to
+ *     the login page — pressing Back after logout will not re-submit login.
  */
-@WebServlet(name = "LogoutServlet", urlPatterns = {"/LogoutServlet"})
 public class LogoutServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet LogoutServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet LogoutServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
+    private static final Logger LOGGER = Logger.getLogger(LogoutServlet.class.getName());
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        performLogout(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        performLogout(request, response);
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    private void performLogout(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
 
+        AuthService authService = (AuthService) getServletContext()
+                .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
+
+        String ipAddress = SecurityUtil.getClientIp(request);
+
+        // Retrieve user info BEFORE invalidating the session
+        String username = SessionUtil.getUsername(request);
+        String role     = SessionUtil.getRole(request);
+
+        if (username == null) {
+            username = "UNKNOWN";
+            role     = "UNKNOWN";
+        }
+
+        // Log the logout event (before session is gone)
+        if (authService != null) {
+            authService.logout(username, role, ipAddress);
+        }
+
+        LOGGER.info("Logout: " + username + " [" + role + "] from " + ipAddress);
+
+        // Invalidate the session — removes it from Tomcat's session store
+        SessionUtil.invalidateSession(request);
+
+        // ── Prevent caching of authenticated pages ────────────────────────────
+        // After logout, clicking Back should NOT restore a protected page.
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma",        "no-cache");
+        response.setDateHeader("Expires",   0);
+
+        // Redirect to login page with a logout confirmation message
+        response.sendRedirect(request.getContextPath() + "/index.jsp?loggedOut=true");
+    }
 }

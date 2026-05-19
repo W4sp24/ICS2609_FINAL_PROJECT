@@ -6,9 +6,10 @@
 package dao;
 import java.sql.*;
 import javax.servlet.ServletContext;
+import util.SecurityUtil;
 
-public class DerbyAuthDAO {
-    private String driver, url, user, pass;
+public class DerbyAuthDAO extends BaseDAO {
+    private final String driver, url, user, pass;
 
     public DerbyAuthDAO(ServletContext context) {
         this.driver = context.getInitParameter("Derby_Driver");
@@ -17,20 +18,21 @@ public class DerbyAuthDAO {
         this.pass = context.getInitParameter("Derby_Pass");
     }
 
-    private Connection getConnection() throws Exception {
+    protected Connection getConnection() throws Exception {
         Class.forName(driver);
         return DriverManager.getConnection(url, user, pass);
     }
 
     public String validateLogin(String username, String password) {
         String role = null;
+        String hashedPassword = SecurityUtil.hashPassword(password);
         String query = "SELECT role FROM USERS WHERE username = ? AND password = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
-            
+
             pstmt.setString(1, username);
-            pstmt.setString(2, password);
+            pstmt.setString(2, hashedPassword);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {

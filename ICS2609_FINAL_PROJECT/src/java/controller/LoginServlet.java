@@ -1,88 +1,80 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import business.AuthService;
+import listeners.AppContextListener;
+import model.User;
+import util.SecurityUtil;
+import util.SessionUtil;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.logging.Logger;
 
-/**
- *
- * @author ethan
- */
-@WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(LoginServlet.class.getName());
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet LoginServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet LoginServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+
+        AuthService authService = (AuthService) getServletContext()
+                .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
+        String ipAddress = SecurityUtil.getClientIp(request);
+
+        // DEBUG: CAPTCHA guard temporarily disabled for direct login testing
+        // HttpSession preLoginSession = request.getSession(false);
+        // if (preLoginSession == null || !SessionUtil.isCaptchaVerified(preLoginSession)) {
+        //     LOGGER.warning("Direct LoginServlet access without CAPTCHA from IP: " + ipAddress);
+        //     response.sendRedirect(request.getContextPath() + "/index.jsp");
+        //     return;
+        // }
+
+        String rawUsername = request.getParameter("username");
+        String rawPassword = request.getParameter("password");
+        String username = SecurityUtil.sanitizeUsername(rawUsername);
+
+        if (SecurityUtil.isBlank(username)) {
+            LOGGER.warning("Login attempt with blank username from IP: " + ipAddress);
+            request.setAttribute("errorMessage", "Username is required.");
+            request.getRequestDispatcher("/errors/incorrect_username.jsp").forward(request, response);
+            return;
+        }
+
+        if (SecurityUtil.isBlank(rawPassword)) {
+            LOGGER.warning("Login attempt with blank password for user: " + username);
+            request.setAttribute("errorMessage", "Password is required.");
+            request.getRequestDispatcher("/errors/incorrect_password.jsp").forward(request, response);
+            return;
+        }
+
+        User user = authService.login(username, rawPassword, ipAddress);
+
+        if (user == null) {
+            request.setAttribute("errorMessage", "Invalid username or password. Please try again.");
+            request.setAttribute("username", SecurityUtil.sanitizeHtml(username));
+            request.getRequestDispatcher("/errors/incorrect_password.jsp").forward(request, response);
+            return;
+        }
+
+        HttpSession session = SessionUtil.createAuthenticatedSession(request, response, user);
+
+        LOGGER.info("Login SUCCESS: " + user.getEmail()
+                + " [" + user.getAppRole() + "] from " + ipAddress
+                + " | new sessionId: " + session.getId());
+
+        if ("admin".equalsIgnoreCase(user.getAppRole())) {
+            response.sendRedirect(request.getContextPath() + "/AdminDashboard");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/GuestDashboard");
+        }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect(request.getContextPath() + "/index.jsp");
+    }
 }

@@ -10,11 +10,16 @@ public class Course {
     private String description;
     private String status;
     private String created_at;
+
     private List<User> enrolledStudents;
     private List<Module> modules;
     private List<Assignment> assignments;
 
-    public Course() {}
+    public Course() {
+        this.enrolledStudents = new ArrayList<>();
+        this.modules = new ArrayList<>();
+        this.assignments = new ArrayList<>();
+    }
 
     public String getC_id() { return c_id; }
     public void setC_id(String c_id) { this.c_id = c_id; }
@@ -33,7 +38,6 @@ public class Course {
 
     public String getCreated_at() { return created_at; }
     public void setCreated_at(String created_at) { this.created_at = created_at; }
-    
     public List<User> getEnrolledStudents() { return enrolledStudents; }
     public void setEnrolledStudents(List<User> students) { this.enrolledStudents = students; }
     public void addStudent(User student) { this.enrolledStudents.add(student); }
