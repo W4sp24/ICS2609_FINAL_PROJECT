@@ -1,25 +1,26 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="model.ActivityLog,java.util.List"%>
 <!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Admin Dashboard</title>
 
-    <link rel="stylesheet" href="css/adminDashboard.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/adminDashboard.css">
 </head>
 <body>
     <div id="background">
-        <img class="twilight" src="images/Twilight.png">
-            <img class="layer mountain far" src="images/mountain-far.png">
-                    <img class="layer mountain mid" src="images/mountain-mid.png">
-                    <img class="layer mountain near" src="images/mountain-near.png">
+        <img class="twilight" src="${pageContext.request.contextPath}/images/Twilight.png">
+            <img class="layer mountain far" src="${pageContext.request.contextPath}/images/mountain-far.png">
+                    <img class="layer mountain mid" src="${pageContext.request.contextPath}/images/mountain-mid.png">
+                    <img class="layer mountain near" src="${pageContext.request.contextPath}/images/mountain-near.png">
                     <!-- foreground -->
-                    <img class="layer greenery" src="images/greenery2.png">
+                    <img class="layer greenery" src="${pageContext.request.contextPath}/images/greenery2.png">
     </div>
     <!--sidebar for nav -->
     <aside class="sidebar">
         <div>
-            <img src="images/logo-small.png" class="sidebar-logo">
+            <img src="${pageContext.request.contextPath}/images/logo-small.png" class="sidebar-logo">
             <div class="sidebar-title">ADMIN PANEL</div>
             <nav class="sidebar-nav">
                 <a href="AdminDashboard" class="active">Dashboard</a>
@@ -46,7 +47,7 @@
                 <button class="top-btn">🔔</button>
                 <div class="profile-box">
                     <!--part to put pfp if possible pero baka wag na ewan-->
-                    <img src="images/!!insertProfilePicHere!!.png">
+                    <img src="${pageContext.request.contextPath}/images/!!insertProfilePicHere!!.png">
                     <div>
                         <h4>${sessionScope.username}</h4>
                         <p>System Admin</p>
@@ -68,7 +69,7 @@
                     <button onclick="location.href='ReportServlet'">Generate Reports</button>
                 </div>
             </div>
-            <img src="images/flower-book.png" class="hero-image">
+            <img src="${pageContext.request.contextPath}/images/flower-book.png" class="hero-image">
         </section>
         <!--for showing stats,: placeholders pa lang-->
         <section class="stats-grid">
@@ -87,17 +88,17 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">⭐</div>
+                <div class="stat-icon">🎓</div>
                 <div>
-                    <h2>N/A</h2>
-                    <p>Completion Rate</p>
+                    <h2>${totalTeachers}</h2>
+                    <p>Teachers</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📜</div>
                 <div>
-                    <h2>N/A</h2>
-                    <p>Reports</p>
+                    <h2>${mysqlRole}</h2>
+                    <p>Your Role</p>
                 </div>
             </div>
         </section>
@@ -109,14 +110,25 @@
                     <button>View All</button>
                 </div>
                 <div class="activity-list">
-                    <%-- TODO: replace with c:forEach over activityLogs once PostgresQLDAO.getLogs() is implemented --%>
+                    <%
+                        List<ActivityLog> logs = (List<ActivityLog>) request.getAttribute("recentLogs");
+                        if (logs == null || logs.isEmpty()) {
+                    %>
+                    <div class="activity-item">
+                        <div class="activity-avatar"></div>
+                        <div><h4>No recent activity</h4><p>No log entries yet</p></div>
+                    </div>
+                    <%  } else {
+                            for (ActivityLog log : logs) { %>
                     <div class="activity-item">
                         <div class="activity-avatar"></div>
                         <div>
-                            <h4>No recent activity</h4>
-                            <p>Activity log coming soon</p>
+                            <h4><%= log.getUsername() %> — <%= log.getAction() %></h4>
+                            <p><%= log.getActivityTime() %> | <%= log.getSource() %> | <%= log.getIpAddress() %></p>
                         </div>
                     </div>
+                    <%      }
+                        } %>
                 </div>
             </div>
             <!--lower planel for quick actions-->

@@ -1,10 +1,7 @@
 package controller;
 
-import business.AuthService;
 import dao.MySqlBusinessDAO;
-import dao.PostgresQLDAO;
 import listeners.AppContextListener;
-import model.User;
 import util.SessionUtil;
 
 import javax.servlet.ServletException;
@@ -15,8 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(name = "AdminDashboardServlet", urlPatterns = {"/AdminDashboard"})
-public class AdminDashboardServlet extends HttpServlet {
+@WebServlet(name = "UserManagementServlet", urlPatterns = {"/UserManagement"})
+public class UserManagementServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -30,21 +27,11 @@ public class AdminDashboardServlet extends HttpServlet {
 
         MySqlBusinessDAO dao = (MySqlBusinessDAO) getServletContext()
                 .getAttribute(AppContextListener.MYSQL_DAO_KEY);
-        AuthService authService = (AuthService) getServletContext()
-                .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
-        PostgresQLDAO logDAO = authService.getLogDAO();
 
-        String username = SessionUtil.getUsername(request);
-        User mysqlUser  = dao.getUserByEmail(username);
-        String mysqlRole = (mysqlUser != null) ? mysqlUser.getAppRole() : "admin";
+        request.setAttribute("students", dao.getAllStudents());
+        request.setAttribute("teachers", dao.getAllTeachers());
 
-        request.setAttribute("totalStudents", dao.getAllStudents().size());
-        request.setAttribute("totalCourses",  dao.getAllCourses().size());
-        request.setAttribute("totalTeachers", dao.getAllTeachers().size());
-        request.setAttribute("mysqlRole",     mysqlRole);
-        request.setAttribute("recentLogs",    logDAO.getLogs(10));
-
-        request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher("/admin/users.jsp").forward(request, response);
     }
 
     @Override

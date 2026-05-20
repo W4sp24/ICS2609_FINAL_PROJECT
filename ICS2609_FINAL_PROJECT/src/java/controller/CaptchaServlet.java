@@ -7,7 +7,6 @@ import util.SecurityUtil;
 import util.SessionUtil;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,7 +14,6 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-@WebServlet("/CaptchaServlet")
 public class CaptchaServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(CaptchaServlet.class.getName());
@@ -53,7 +51,7 @@ public class CaptchaServlet extends HttpServlet {
                 request.setAttribute("errorMessage",
                         "Too many failed CAPTCHA attempts. Please wait "
                         + remaining + " second(s) before trying again.");
-                request.getRequestDispatcher("captcha_error.jsp")
+                request.getRequestDispatcher("/errors/captcha_error.jsp")
                         .forward(request, response);
                 return;
             }
@@ -104,12 +102,12 @@ public class CaptchaServlet extends HttpServlet {
             if (authService != null) authService.logCaptchaLockout(ipAddress);
             request.setAttribute("errorMessage",
                     "Maximum CAPTCHA attempts reached. Please wait 5 minutes before trying again.");
-            request.getRequestDispatcher("captcha_error.jsp").forward(request, response);
+            request.getRequestDispatcher("/errors/captcha_error.jsp").forward(request, response);
             return;
         }
 
         request.setAttribute("errorMessage", errorMessage);
         request.setAttribute("attemptsLeft", SessionUtil.MAX_CAPTCHA_ATTEMPTS - attempts);
-        request.getRequestDispatcher("captcha_failed.jsp").forward(request, response);
+        request.getRequestDispatcher("/errors/captcha_failed.jsp").forward(request, response);
     }
 }

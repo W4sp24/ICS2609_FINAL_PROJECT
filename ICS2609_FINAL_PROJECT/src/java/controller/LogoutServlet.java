@@ -6,7 +6,6 @@ import util.SecurityUtil;
 import util.SessionUtil;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +26,6 @@ import java.util.logging.Logger;
  *   - Redirect (not forward) is used so the browser issues a new GET to
  *     the login page — pressing Back after logout will not re-submit login.
  */
-@WebServlet("/LogoutServlet")
 public class LogoutServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(LogoutServlet.class.getName());

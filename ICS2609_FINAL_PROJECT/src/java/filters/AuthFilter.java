@@ -6,7 +6,6 @@ import util.SecurityUtil;
 import util.SessionUtil;
 
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -52,7 +51,6 @@ import java.util.logging.Logger;
  * </filter-mapping>
  * --------------------------------------------------
  */
-@WebFilter(urlPatterns = {"/admin/*", "/guest/*", "/ReportServlet"})
 public class AuthFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(AuthFilter.class.getName());
@@ -88,7 +86,7 @@ public class AuthFilter implements Filter {
         if (session == null) {
             LOGGER.info("No session for request: " + requestUri + " | IP: " + ipAddress);
             if (authService != null) authService.logSessionExpired(ipAddress, requestUri);
-            response.sendRedirect(request.getContextPath() + "/session_expired.jsp");
+            response.sendRedirect(request.getContextPath() + "/errors/session_expired.jsp");
             return;
         }
 
@@ -97,7 +95,7 @@ public class AuthFilter implements Filter {
             LOGGER.warning("Unauthenticated access attempt: " + requestUri + " | IP: " + ipAddress);
             if (authService != null)
                 authService.logUnauthorizedAccess("UNKNOWN", "UNKNOWN", ipAddress, requestUri);
-            response.sendRedirect(request.getContextPath() + "/unauthorized.jsp");
+            response.sendRedirect(request.getContextPath() + "/errors/unauthorized.jsp");
             return;
         }
 
@@ -112,7 +110,7 @@ public class AuthFilter implements Filter {
                         + SessionUtil.getUsername(request) + " | IP: " + ipAddress);
                 if (authService != null) authService.logSessionExpired(ipAddress, requestUri);
                 SessionUtil.invalidateSession(request);
-                response.sendRedirect(request.getContextPath() + "/session_expired.jsp");
+                response.sendRedirect(request.getContextPath() + "/errors/session_expired.jsp");
                 return;
             }
         }
