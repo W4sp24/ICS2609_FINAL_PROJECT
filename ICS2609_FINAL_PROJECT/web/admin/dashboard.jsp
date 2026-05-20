@@ -1,5 +1,4 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="model.ActivityLog,java.util.List"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -66,7 +65,7 @@
                 </p>
                 <div class="hero-buttons">
                     <button onclick="location.href='UserManagement'">Manage Students</button>
-                    <button onclick="location.href='ReportServlet'">Generate Reports</button>
+                    <button onclick="location.href='Course'">Manage Courses</button>
                 </div>
             </div>
             <img src="${pageContext.request.contextPath}/images/flower-book.png" class="hero-image">
@@ -102,36 +101,7 @@
                 </div>
             </div>
         </section>
-        <!--lower pane;l for recent activity-->
         <section class="lower-grid">
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>Recent Activity</h2>
-                    <button>View All</button>
-                </div>
-                <div class="activity-list">
-                    <%
-                        List<ActivityLog> logs = (List<ActivityLog>) request.getAttribute("recentLogs");
-                        if (logs == null || logs.isEmpty()) {
-                    %>
-                    <div class="activity-item">
-                        <div class="activity-avatar"></div>
-                        <div><h4>No recent activity</h4><p>No log entries yet</p></div>
-                    </div>
-                    <%  } else {
-                            for (ActivityLog log : logs) { %>
-                    <div class="activity-item">
-                        <div class="activity-avatar"></div>
-                        <div>
-                            <h4><%= log.getUsername() %> — <%= log.getAction() %></h4>
-                            <p><%= log.getActivityTime() %> | <%= log.getSource() %> | <%= log.getIpAddress() %></p>
-                        </div>
-                    </div>
-                    <%      }
-                        } %>
-                </div>
-            </div>
-            <!--lower planel for quick actions-->
             <div class="panel">
                 <div class="panel-header">
                     <h2>Quick Actions</h2>
@@ -140,7 +110,14 @@
                     <button onclick="location.href='UserManagement'">Manage Students</button>
                     <button onclick="location.href='Course'">Manage Courses</button>
                     <button onclick="location.href='Grade'">Grade Submissions</button>
-                    <button onclick="location.href='ReportServlet'">Generate Reports</button>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Your Role</h2>
+                </div>
+                <div style="padding:20px 0;text-align:center;font-size:15px;color:rgba(255,255,255,0.75)">
+                    Logged in as <strong>${mysqlRole}</strong>
                 </div>
             </div>
         </section>

@@ -70,7 +70,12 @@ public class SessionUtil {
     }
 
     public static boolean isAdmin(HttpServletRequest request) {
-        return "admin".equalsIgnoreCase(getRole(request));
+        String role = getRole(request);
+        return "Admin".equalsIgnoreCase(role) || "SysAdmin".equalsIgnoreCase(role);
+    }
+
+    public static boolean isSysAdmin(HttpServletRequest request) {
+        return "SysAdmin".equalsIgnoreCase(getRole(request));
     }
 
     public static void invalidateSession(HttpServletRequest request) {

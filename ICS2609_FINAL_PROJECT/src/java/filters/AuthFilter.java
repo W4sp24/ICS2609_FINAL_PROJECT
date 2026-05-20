@@ -106,9 +106,13 @@ public class AuthFilter implements Filter {
             long maxAgeMs     = (long) SessionUtil.SESSION_TIMEOUT_SECONDS * 1000;
 
             if (sessionAgeMs > maxAgeMs) {
+                String timedOutUser = SessionUtil.getUsername(request);
                 LOGGER.info("Session expired (age " + (sessionAgeMs / 1000) + "s) for: "
-                        + SessionUtil.getUsername(request) + " | IP: " + ipAddress);
+                        + timedOutUser + " | IP: " + ipAddress);
                 if (authService != null) authService.logSessionExpired(ipAddress, requestUri);
+                java.util.Set activeSessions = (java.util.Set)
+                    request.getServletContext().getAttribute(AppContextListener.ACTIVE_SESSIONS_KEY);
+                if (activeSessions != null && timedOutUser != null) activeSessions.remove(timedOutUser);
                 SessionUtil.invalidateSession(request);
                 response.sendRedirect(request.getContextPath() + "/errors/session_expired.jsp");
                 return;

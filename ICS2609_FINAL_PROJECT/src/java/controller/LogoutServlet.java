@@ -66,6 +66,10 @@ public class LogoutServlet extends HttpServlet {
 
         LOGGER.info("Logout: " + username + " [" + role + "] from " + ipAddress);
 
+        java.util.Set activeSessions = (java.util.Set)
+            getServletContext().getAttribute(AppContextListener.ACTIVE_SESSIONS_KEY);
+        if (activeSessions != null && username != null) activeSessions.remove(username);
+
         // Invalidate the session — removes it from Tomcat's session store
         SessionUtil.invalidateSession(request);
 

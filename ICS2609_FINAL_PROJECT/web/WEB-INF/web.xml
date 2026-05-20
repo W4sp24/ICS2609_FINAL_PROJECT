@@ -7,10 +7,7 @@
 
     <display-name>ICS2609 Course Management System</display-name>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- SECTION 1: Context Parameters (Deployment Descriptor Configuration) -->
-    <!-- Sensitive values are stored here per SRS NFR-SEC-003 / FR-DBMS-006 -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
 
     <!-- Google reCAPTCHA v2 Keys (FR-AUTH-008) -->
     <context-param>
@@ -38,9 +35,13 @@
         <param-value>Active Learning, Inc. Course Management System</param-value>
     </context-param>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- SECTION 1b: JDBC Database Connection Parameters (FR-DBMS-006)      -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SysAdmin dashboard auto-refresh interval (seconds) -->
+    <context-param>
+        <param-name>sysAdminRefreshInterval</param-name>
+        <param-value>30</param-value>
+    </context-param>
+
+
 
     <!-- Apache Derby — authDB (user authentication) -->
     <context-param>
@@ -96,26 +97,17 @@
         <param-value>app</param-value>
     </context-param>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- SECTION 2: Session Configuration                                   -->
-    <!-- 5-minute session timeout (FR-AUTH-006, SessionUtil constant)       -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
 
     <session-config>
         <!-- Timeout in minutes: 5 minutes = 300 seconds -->
         <session-timeout>5</session-timeout>
         <cookie-config>
-            <!-- HttpOnly: prevents JavaScript from reading the session cookie -->
             <http-only>true</http-only>
-            <!-- Secure: set to true when deployed over HTTPS in production -->
-            <!-- <secure>true</secure> -->
-    </cookie-config>
+ 
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- SECTION 3: Servlet Declarations                                    -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
 
     <servlet>
         <servlet-name>CaptchaServlet</servlet-name>
@@ -153,10 +145,7 @@
         <url-pattern>/ReportServlet</url-pattern>
     </servlet-mapping>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- SECTION 4: Filter Declarations                                     -->
-    <!-- Filters are applied in DECLARATION ORDER for the same URL pattern  -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
 
     <!-- AuthFilter: checks authentication and session timeout -->
     <filter>
@@ -175,6 +164,14 @@
         <filter-name>AuthFilter</filter-name>
         <url-pattern>/ReportServlet</url-pattern>
     </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/SysAdminDashboard</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/sysadmin/*</url-pattern>
+    </filter-mapping>
 
     <!-- RoleFilter: checks Admin role for admin-only resources (runs AFTER AuthFilter) -->
     <filter>
@@ -190,17 +187,13 @@
         <url-pattern>/ReportServlet</url-pattern>
     </filter-mapping>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- SECTION 5: Welcome File                                            -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
 
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- SECTION 6: Custom Error Pages (NFR-USE-003, NFR-ERR-003)          -->
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
 
     <error-page>
         <error-code>403</error-code>

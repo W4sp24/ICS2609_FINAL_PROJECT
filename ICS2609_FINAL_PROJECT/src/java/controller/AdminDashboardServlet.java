@@ -1,8 +1,6 @@
 package controller;
 
-import business.AuthService;
 import dao.MySqlBusinessDAO;
-import dao.PostgresQLDAO;
 import listeners.AppContextListener;
 import model.User;
 import util.SessionUtil;
@@ -30,19 +28,15 @@ public class AdminDashboardServlet extends HttpServlet {
 
         MySqlBusinessDAO dao = (MySqlBusinessDAO) getServletContext()
                 .getAttribute(AppContextListener.MYSQL_DAO_KEY);
-        AuthService authService = (AuthService) getServletContext()
-                .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
-        PostgresQLDAO logDAO = authService.getLogDAO();
 
-        String username = SessionUtil.getUsername(request);
-        User mysqlUser  = dao.getUserByEmail(username);
+        String username  = SessionUtil.getUsername(request);
+        User mysqlUser   = dao.getUserByEmail(username);
         String mysqlRole = (mysqlUser != null) ? mysqlUser.getAppRole() : "admin";
 
         request.setAttribute("totalStudents", dao.getAllStudents().size());
         request.setAttribute("totalCourses",  dao.getAllCourses().size());
         request.setAttribute("totalTeachers", dao.getAllTeachers().size());
         request.setAttribute("mysqlRole",     mysqlRole);
-        request.setAttribute("recentLogs",    logDAO.getLogs(10));
 
         request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
     }

@@ -13,8 +13,9 @@ import java.util.logging.Logger;
 @WebListener
 public class AppContextListener implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(AppContextListener.class.getName());
-    public static final String AUTH_SERVICE_KEY = "authService";
-    public static final String MYSQL_DAO_KEY    = "mysqlDAO";
+    public static final String AUTH_SERVICE_KEY    = "authService";
+    public static final String MYSQL_DAO_KEY       = "mysqlDAO";
+    public static final String ACTIVE_SESSIONS_KEY = "activeSessions";
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -29,6 +30,9 @@ public class AppContextListener implements ServletContextListener {
 
         AuthService authService = new AuthService(authDAO, logDAO, mysqlDAO);
         ctx.setAttribute(AUTH_SERVICE_KEY, authService);
+
+        ctx.setAttribute(ACTIVE_SESSIONS_KEY,
+            java.util.Collections.synchronizedSet(new java.util.HashSet<String>()));
 
         String siteKey = ctx.getInitParameter("recaptchaSiteKey");
         LOGGER.info("reCAPTCHA site key loaded: "

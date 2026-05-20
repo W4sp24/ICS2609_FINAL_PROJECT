@@ -5,6 +5,8 @@
  */
 package dao;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.ServletContext;
 import util.SecurityUtil;
 
@@ -43,5 +45,22 @@ public class DerbyAuthDAO extends BaseDAO {
             e.printStackTrace();
         }
         return role;
+    }
+
+    public List<String[]> getAllUsers() {
+        List<String[]> users = new ArrayList<String[]>();
+        String sql = "SELECT username, role, createdDate FROM USERS ORDER BY role, username";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                users.add(new String[]{
+                    rs.getString("username"),
+                    rs.getString("role"),
+                    rs.getString("createdDate")
+                });
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return users;
     }
 }
