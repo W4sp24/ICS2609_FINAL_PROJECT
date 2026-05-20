@@ -66,15 +66,54 @@ public class GuestDashboardServlet extends HttpServlet {
             gradeMap.put(g.getSubmission_id(), g);
         }
 
+        // perCourseStats: courseId → [totalAssignments, submitted, graded]
+        Map<String, int[]> perCourseStats = new LinkedHashMap<>();
+        for (Course c : enrolledCourses) {
+            int total = 0, submitted = 0, graded = 0;
+            for (Module m : courseModules.getOrDefault(c.getC_id(), Collections.emptyList())) {
+                for (Assignment a : moduleAssignments.getOrDefault(m.getMod_id(), Collections.emptyList())) {
+                    total++;
+                    Submission sub = submissionMap.get(a.getA_id());
+                    if (sub != null) {
+                        submitted++;
+                        if (gradeMap.containsKey(sub.getS_id())) graded++;
+                    }
+                }
+            }
+            perCourseStats.put(c.getC_id(), new int[]{total, submitted, graded});
+        }
+
+        // pendingAssignments: unsubmitted assignments sorted by due_date ascending
+        List<Assignment> pendingAssignments = new ArrayList<>();
+        Map<String, String> assignmentCourseTitle = new LinkedHashMap<>();
+        for (Course c : enrolledCourses) {
+            for (Module m : courseModules.getOrDefault(c.getC_id(), Collections.emptyList())) {
+                for (Assignment a : moduleAssignments.getOrDefault(m.getMod_id(), Collections.emptyList())) {
+                    if (!submissionMap.containsKey(a.getA_id())) {
+                        pendingAssignments.add(a);
+                        assignmentCourseTitle.put(a.getA_id(), c.getTitle());
+                    }
+                }
+            }
+        }
+        pendingAssignments.sort((a1, a2) -> {
+            if (a1.getDue_date() == null) return 1;
+            if (a2.getDue_date() == null) return -1;
+            return a1.getDue_date().compareTo(a2.getDue_date());
+        });
+
         request.setAttribute("enrolledCourses",   enrolledCourses);
         request.setAttribute("courseModules",     courseModules);
         request.setAttribute("moduleMaterials",   moduleMaterials);
         request.setAttribute("moduleAssignments", moduleAssignments);
         request.setAttribute("submissionMap",     submissionMap);
         request.setAttribute("gradeMap",          gradeMap);
-        request.setAttribute("enrolledCount",     enrolledCourses.size());
-        request.setAttribute("submissionCount",   submissions.size());
-        request.setAttribute("gradeCount",        grades.size());
+        request.setAttribute("enrolledCount",          enrolledCourses.size());
+        request.setAttribute("submissionCount",        submissions.size());
+        request.setAttribute("gradeCount",             grades.size());
+        request.setAttribute("perCourseStats",         perCourseStats);
+        request.setAttribute("pendingAssignments",     pendingAssignments);
+        request.setAttribute("assignmentCourseTitle",  assignmentCourseTitle);
 
         request.getRequestDispatcher("/guest/dashboard.jsp").forward(request, response);
     }

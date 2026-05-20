@@ -1,0 +1,20 @@
+# Copy this file to test.properties and fill in your local values.
+# test.properties is gitignored — never commit it.
+
+# Apache Derby (LoginDB)
+derby.driver=org.apache.derby.jdbc.ClientDriver
+derby.url=jdbc:derby://localhost:1527/LoginDB
+derby.user=app
+derby.pass=YOUR_DERBY_PASSWORD
+
+# MySQL (course_management_db)
+mysql.driver=com.mysql.cj.jdbc.Driver
+mysql.url=jdbc:mysql://localhost:3306/course_management_db
+mysql.user=root
+mysql.pass=YOUR_MYSQL_PASSWORD
+
+# PostgreSQL (postgres default DB)
+postgres.driver=org.postgresql.Driver
+postgres.url=jdbc:postgresql://localhost:5432/postgres
+postgres.user=postgres
+postgres.pass=YOUR_POSTGRES_PASSWORD
