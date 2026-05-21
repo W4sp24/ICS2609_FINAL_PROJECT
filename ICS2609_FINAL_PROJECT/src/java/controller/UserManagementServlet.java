@@ -28,10 +28,7 @@ public class UserManagementServlet extends HttpServlet {
         MySqlBusinessDAO dao = (MySqlBusinessDAO) getServletContext()
                 .getAttribute(AppContextListener.MYSQL_DAO_KEY);
 
-        request.setAttribute("students", dao.getAllStudents());
-        request.setAttribute("teachers", dao.getAllTeachers());
-
-        request.getRequestDispatcher("/admin/users.jsp").forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/AdminDashboard?section=users");
     }
 
     @Override

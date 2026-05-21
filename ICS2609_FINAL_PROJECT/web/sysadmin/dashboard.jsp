@@ -44,7 +44,7 @@
             <a href="SysAdminDashboard" class="active">Dashboard</a>
             <a href="#section-users"  onclick="scrollTo('section-users')">Auth Database</a>
             <a href="#section-logs"   onclick="scrollTo('section-logs')">Activity Logs</a>
-            <a href="SysAdminDashboard?action=report" target="_blank">Generate Report</a>
+            <a href="<%= cp %>/ReportServlet?type=all_records" target="_blank">All Records PDF</a>
         </nav>
     </div>
     <div class="sidebar-bottom">
@@ -76,7 +76,7 @@
             <div class="hero-buttons">
                 <button onclick="document.getElementById('section-users').scrollIntoView({behavior:'smooth'})">Auth Database</button>
                 <button onclick="document.getElementById('section-logs').scrollIntoView({behavior:'smooth'})">Activity Logs</button>
-                <button onclick="window.open('SysAdminDashboard?action=report','_blank')">Generate Report</button>
+                <button onclick="window.open('<%= cp %>/ReportServlet?type=all_records','_blank')">All Records PDF</button>
             </div>
         </div>
         <img src="<%= cp %>/images/flower-book.png" class="hero-image">
@@ -118,9 +118,9 @@
     <div class="panel" id="section-users" style="margin-top:28px">
         <div class="panel-header">
             <h2>Authentication Database</h2>
-            <a href="SysAdminDashboard?action=report" target="_blank">
+            <a href="<%= cp %>/ReportServlet?type=all_records" target="_blank">
                 <button style="border:none;padding:8px 18px;border-radius:14px;background:rgba(255,255,255,0.18);color:white;cursor:pointer;font-size:13px;">
-                    &#128438; Print Report
+                    &#128438; Download PDF
                 </button>
             </a>
         </div>
@@ -168,7 +168,18 @@
     <div class="panel" id="section-logs" style="margin-top:22px">
         <div class="panel-header">
             <h2>Activity Log</h2>
-            <span style="font-size:13px;color:rgba(255,255,255,0.55)">Last 100 entries</span>
+            <form method="get" action="<%= cp %>/ReportServlet" target="_blank"
+                  style="display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input type="hidden" name="type" value="time_bound">
+                <input type="date" name="startDate" required
+                       style="padding:5px 8px;border-radius:8px;border:none;font-size:12px;">
+                <input type="date" name="endDate" required
+                       style="padding:5px 8px;border-radius:8px;border:none;font-size:12px;">
+                <button type="submit"
+                        style="padding:5px 14px;border-radius:8px;border:none;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:12px;">
+                    &#128438; Time-Bound PDF
+                </button>
+            </form>
         </div>
         <% if (recentLogs.isEmpty()) { %>
             <div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5)">No activity logged yet.</div>

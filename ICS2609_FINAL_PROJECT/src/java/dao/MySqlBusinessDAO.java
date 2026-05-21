@@ -545,6 +545,26 @@ public class MySqlBusinessDAO extends BaseDAO {
         return submissions;
     }
 
+    public List<Submission> getAllSubmissionsByCourse(String courseId) {
+        List<Submission> submissions = new ArrayList<>();
+        String sql = "SELECT s.* FROM submissions s "
+                   + "JOIN assignments a ON s.assignment_id = a.a_id "
+                   + "JOIN modules m ON a.module_id = m.mod_id "
+                   + "WHERE m.course_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, courseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    submissions.add(mapSubmission(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return submissions;
+    }
+
     /**
      * Returns all student submissions for a given assignment.
      */
