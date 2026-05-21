@@ -7,6 +7,7 @@ import model.ActivityLog;
 import model.Assignment;
 import model.Course;
 import model.Enrollment;
+import model.Module;
 import model.Submission;
 import model.User;
 import util.SessionUtil;
@@ -94,9 +95,21 @@ public class AdminDashboardServlet extends HttpServlet {
         request.setAttribute("mysqlRole", mysqlRole);
         request.setAttribute("userId",    userId);
 
-        // ── Courses tab ───────────────────────────────────────────────────
+        // ── Courses tab + Course Management ──────────────────────────────
         request.setAttribute("courses",          courses);
         request.setAttribute("enrollmentCounts", enrollmentCounts);
+
+        Map<String, List<Module>>     courseModules    = new LinkedHashMap<String, List<Module>>();
+        Map<String, List<Assignment>> moduleAssignments = new LinkedHashMap<String, List<Assignment>>();
+        for (Course c : courses) {
+            List<Module> mods = dao.getModulesByCourse(c.getC_id());
+            courseModules.put(c.getC_id(), mods);
+            for (Module m : mods) {
+                moduleAssignments.put(m.getMod_id(), dao.getAssignmentsByModule(m.getMod_id()));
+            }
+        }
+        request.setAttribute("courseModules",     courseModules);
+        request.setAttribute("moduleAssignments", moduleAssignments);
 
         // ── Grades tab ────────────────────────────────────────────────────
         request.setAttribute("submissionsByCourse", subsByCourse);

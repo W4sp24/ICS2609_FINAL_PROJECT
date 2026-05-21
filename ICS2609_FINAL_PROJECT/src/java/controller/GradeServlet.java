@@ -84,8 +84,11 @@ public class GradeServlet extends HttpServlet {
         MySqlBusinessDAO dao = (MySqlBusinessDAO) getServletContext()
                 .getAttribute(AppContextListener.MYSQL_DAO_KEY);
 
-        String action = request.getParameter("action");
-        String userId = (String) session.getAttribute(SessionUtil.ATTR_USER_ID);
+        String action   = request.getParameter("action");
+        String userId   = (String) session.getAttribute(SessionUtil.ATTR_USER_ID);
+        String courseId = request.getParameter("courseId");
+        String redirect = "/AdminDashboard?section=courseManagement"
+                + (courseId != null && !courseId.isEmpty() ? "&courseId=" + courseId : "");
 
         if ("grade".equals(action)) {
             Grade grade = new Grade();
@@ -103,6 +106,6 @@ public class GradeServlet extends HttpServlet {
             dao.updateGrade(grade);
         }
 
-        response.sendRedirect(request.getContextPath() + "/AdminDashboard?section=grades");
+        response.sendRedirect(request.getContextPath() + redirect);
     }
 }
