@@ -103,7 +103,7 @@
         <session-timeout>5</session-timeout>
         <cookie-config>
             <http-only>true</http-only>
- 
+        </cookie-config>
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
@@ -164,14 +164,6 @@
         <filter-name>AuthFilter</filter-name>
         <url-pattern>/ReportServlet</url-pattern>
     </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/SysAdminDashboard</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/sysadmin/*</url-pattern>
-    </filter-mapping>
 
     <!-- RoleFilter: checks Admin role for admin-only resources (runs AFTER AuthFilter) -->
     <filter>
@@ -181,10 +173,6 @@
     <filter-mapping>
         <filter-name>RoleFilter</filter-name>
         <url-pattern>/admin/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>RoleFilter</filter-name>
-        <url-pattern>/ReportServlet</url-pattern>
     </filter-mapping>
 
 

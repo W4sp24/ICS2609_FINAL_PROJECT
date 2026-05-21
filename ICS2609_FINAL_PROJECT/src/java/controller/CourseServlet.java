@@ -54,7 +54,7 @@ public class CourseServlet extends HttpServlet {
         request.setAttribute("mysqlRole",        mysqlRole);
         request.setAttribute("userId",           userId);
 
-        request.getRequestDispatcher("/admin/courses.jsp").forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/AdminDashboard?section=courses");
     }
 
     @Override
@@ -98,6 +98,6 @@ public class CourseServlet extends HttpServlet {
             );
         }
 
-        response.sendRedirect(request.getContextPath() + "/Course");
+        response.sendRedirect(request.getContextPath() + "/AdminDashboard?section=courses");
     }
 }

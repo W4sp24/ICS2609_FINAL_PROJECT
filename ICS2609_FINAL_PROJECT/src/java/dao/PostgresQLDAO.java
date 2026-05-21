@@ -49,20 +49,60 @@ public class PostgresQLDAO extends BaseDAO {
             ps.setInt(1, limit);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    ActivityLog entry = new ActivityLog();
-                    entry.setLogId(rs.getInt("log_id"));
-                    entry.setUsername(rs.getString("username"));
-                    entry.setActivity(rs.getString("action"));
-                    entry.setIpAddress(rs.getString("ip_address"));
-                    entry.setUserRole(rs.getString("role"));
-                    entry.setModule(rs.getString("source"));
-                    entry.setActivityTime(rs.getTimestamp("log_timestamp"));
-                    logs.add(entry);
+                    logs.add(mapLog(rs));
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return logs;
+    }
+
+    public List<ActivityLog> getLogs(Timestamp start, Timestamp end) {
+        List<ActivityLog> logs = new ArrayList<>();
+        String sql = "SELECT * FROM activity_logs WHERE log_timestamp BETWEEN ? AND ? ORDER BY log_timestamp DESC";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, start);
+            ps.setTimestamp(2, end);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    logs.add(mapLog(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return logs;
+    }
+
+    public List<ActivityLog> getLogsByUser(String username, int limit) {
+        List<ActivityLog> logs = new ArrayList<>();
+        String sql = "SELECT * FROM activity_logs WHERE username = ? ORDER BY log_timestamp DESC LIMIT ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setInt(2, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    logs.add(mapLog(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return logs;
+    }
+
+    private ActivityLog mapLog(ResultSet rs) throws SQLException {
+        ActivityLog entry = new ActivityLog();
+        entry.setLogId(rs.getInt("log_id"));
+        entry.setUsername(rs.getString("username"));
+        entry.setActivity(rs.getString("action"));
+        entry.setIpAddress(rs.getString("ip_address"));
+        entry.setUserRole(rs.getString("role"));
+        entry.setModule(rs.getString("source"));
+        entry.setActivityTime(rs.getTimestamp("log_timestamp"));
+        return entry;
     }
 }

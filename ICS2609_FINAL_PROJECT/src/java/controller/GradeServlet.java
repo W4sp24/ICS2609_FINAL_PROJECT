@@ -68,7 +68,7 @@ public class GradeServlet extends HttpServlet {
         request.setAttribute("totalPending",        totalPending);
         request.setAttribute("mysqlRole",           mysqlRole);
 
-        request.getRequestDispatcher("/admin/grades.jsp").forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/AdminDashboard?section=grades");
     }
 
     @Override
@@ -103,6 +103,6 @@ public class GradeServlet extends HttpServlet {
             dao.updateGrade(grade);
         }
 
-        response.sendRedirect(request.getContextPath() + "/Grade");
+        response.sendRedirect(request.getContextPath() + "/AdminDashboard?section=grades");
     }
 }

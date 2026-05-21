@@ -12,45 +12,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-/**
- * FILE: filters/AuthFilter.java
- *
- * Servlet filter that protects all pages requiring authentication.
- *
- * Applied to: /admin/*, /guest/*, /ReportServlet, and other protected resources.
- * (Configured in web.xml — see below.)
- *
- * Checks performed (in order):
- *   1. Is the session null?          → redirect to session_expired.jsp
- *   2. Is the user authenticated?    → if not, redirect to unauthorized.jsp
- *   3. Has the session timed out?    → invalidate + redirect to session_expired.jsp
- *   4. All checks pass               → chain.doFilter() (allow through)
- *
- * NOTE: Tomcat's session timeout (web.xml <session-timeout>5</session-timeout>)
- * automatically invalidates sessions server-side after 5 minutes of inactivity.
- * The manual timeout check here is a belt-and-suspenders guard for edge cases
- * (e.g., clock skew, Tomcat restart) and provides a user-friendly redirect.
- *
- * web.xml configuration (add inside <web-app>):
- * --------------------------------------------------
- * <filter>
- *     <filter-name>AuthFilter</filter-name>
- *     <filter-class>filters.AuthFilter</filter-class>
- * </filter>
- * <filter-mapping>
- *     <filter-name>AuthFilter</filter-name>
- *     <url-pattern>/admin/*</url-pattern>
- * </filter-mapping>
- * <filter-mapping>
- *     <filter-name>AuthFilter</filter-name>
- *     <url-pattern>/guest/*</url-pattern>
- * </filter-mapping>
- * <filter-mapping>
- *     <filter-name>AuthFilter</filter-name>
- *     <url-pattern>/ReportServlet</url-pattern>
- * </filter-mapping>
- * --------------------------------------------------
- */
+
 public class AuthFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(AuthFilter.class.getName());
@@ -70,9 +32,7 @@ public class AuthFilter implements Filter {
         String requestUri = request.getRequestURI();
         String ipAddress  = SecurityUtil.getClientIp(request);
 
-        // ── Apply no-cache headers to all protected responses ─────────────────
-        // This ensures authenticated pages are not served from browser cache
-        // after the session expires or the user logs out.
+
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         response.setHeader("Pragma",        "no-cache");
         response.setDateHeader("Expires",   0);
@@ -80,7 +40,6 @@ public class AuthFilter implements Filter {
         AuthService authService = (AuthService) request.getServletContext()
                 .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
 
-        // ── Check 1: Does a session exist? ────────────────────────────────────
         HttpSession session = request.getSession(false);
 
         if (session == null) {
@@ -90,7 +49,6 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        // ── Check 2: Is the user authenticated? ───────────────────────────────
         if (!SessionUtil.isAuthenticated(request)) {
             LOGGER.warning("Unauthenticated access attempt: " + requestUri + " | IP: " + ipAddress);
             if (authService != null)
@@ -99,7 +57,6 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        // ── Check 3: Has the session timed out based on login timestamp? ──────
         Long loginTimestamp = (Long) session.getAttribute(SessionUtil.ATTR_LOGIN_TIME);
         if (loginTimestamp != null) {
             long sessionAgeMs = System.currentTimeMillis() - loginTimestamp;
@@ -119,7 +76,6 @@ public class AuthFilter implements Filter {
             }
         }
 
-        // ── All checks passed — allow the request through ─────────────────────
         chain.doFilter(request, response);
     }
 
