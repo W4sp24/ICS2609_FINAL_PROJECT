@@ -94,6 +94,13 @@ public class ActivityLog {
         this.activityTime = activityTime;
     }
 
+    public String getFormatDate() {
+        if (this.activityTime != null) {
+            return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(this.activityTime);
+        }
+        return "";
+    }
+
     @Override
     public String toString() {
         return "ActivityLog{logId=" + logId + ", username=" + username

@@ -1,86 +1,112 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controller;
 
+import business.AuthService;
+import business.PdfReportBuilder;
+import dao.MySqlBusinessDAO;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import listeners.AppContextListener;
+import model.ActivityLog;
+import model.User;
+import util.SessionUtil;
 
-/**
- *
- * @author ethan
- */
 public class ReportServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ReportServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet ReportServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+
+        String loggedInAdmin = SessionUtil.getUsername(request);
+        if (loggedInAdmin == null) {
+            response.sendRedirect(request.getContextPath() + "/errors/session_expired.jsp");
+            return;
+        }
+
+        String type = request.getParameter("type");
+        if (type == null) {
+            type = "all_records";
+        }
+
+        ServletContext context = getServletContext();
+        String pdfHeader = context.getInitParameter("pdfHeader");
+        String pdfFooter = context.getInitParameter("pdfFooter");
+
+        MySqlBusinessDAO dao = (MySqlBusinessDAO) context.getAttribute(AppContextListener.MYSQL_DAO_KEY);
+        AuthService auth = (AuthService) context.getAttribute(AppContextListener.AUTH_SERVICE_KEY);
+
+        PdfReportBuilder builder = new PdfReportBuilder();
+        String timestampStr = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+
+        try {
+            if (type.equalsIgnoreCase("all_records")) {
+                List<User> usersToReport = new ArrayList<User>();
+                List<User> students = dao.getAllStudents();
+                List<User> teachers = dao.getAllTeachers();
+                if (students != null) usersToReport.addAll(students);
+                if (teachers != null) usersToReport.addAll(teachers);
+
+                String filename = "USER_REPORT_" + timestampStr + ".pdf";
+                response.setContentType("application/pdf");
+                response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+                builder.generateUserReport(response.getOutputStream(), usersToReport, loggedInAdmin,
+                        pdfHeader, pdfFooter, "System Enrollment Directory - All Records");
+
+            } else if (type.equalsIgnoreCase("logged_in_admin")) {
+                List<User> usersToReport = new ArrayList<User>();
+                User adminUser = dao.getUserByEmail(loggedInAdmin);
+                if (adminUser == null) {
+                    adminUser = new User();
+                    adminUser.setEmail(loggedInAdmin);
+                    adminUser.setAppRole("admin");
+                }
+                usersToReport.add(adminUser);
+
+                String filename = "LOGGED_IN_ADMIN_" + timestampStr + ".pdf";
+                response.setContentType("application/pdf");
+                response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+                builder.generateUserReport(response.getOutputStream(), usersToReport, loggedInAdmin,
+                        pdfHeader, pdfFooter, "Administrative Identity Verification Log");
+
+            } else if (type.equalsIgnoreCase("time_bound")) {
+                List<ActivityLog> logs = auth.getLogDAO().getLogs(100);
+
+                String filename = "AUDIT_LOGS_" + timestampStr + ".pdf";
+                response.setContentType("application/pdf");
+                response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+                builder.generateLogReport(response.getOutputStream(), logs, loggedInAdmin,
+                        pdfHeader, pdfFooter, "System Security and Operational Audit Trails");
+
+            } else {
+                response.sendRedirect(request.getContextPath() + "/errors/error_404.jsp");
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/errors/error_500.jsp");
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "PDF Report Generation Servlet";
+    }
 }
