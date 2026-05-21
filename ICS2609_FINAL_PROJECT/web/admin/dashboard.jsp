@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="model.ActivityLog,model.Course,model.Module,model.Submission,model.Assignment,model.User,java.util.List,java.util.Map,java.util.Set,java.util.Collections,java.util.ArrayList"%>
+<%@page import="model.ActivityLog,model.Course,model.Enrollment,model.Module,model.Submission,model.Assignment,model.User,java.util.List,java.util.Map,java.util.Set,java.util.HashSet,java.util.Collections,java.util.ArrayList"%>
 <%
     // Auth DB + logs
     List<String[]>    allUsers       = (List<String[]>)    request.getAttribute("allUsers");
@@ -15,7 +15,8 @@
     int totalUsers  = request.getAttribute("totalUsers")  != null ? (Integer) request.getAttribute("totalUsers")  : 0;
 
     // Course Management
-    List<Course>                  courses           = (List<Course>)                  request.getAttribute("courses");
+    List<Course>                     courses           = (List<Course>)                     request.getAttribute("courses");
+    Map<String, List<Enrollment>>    courseEnrollments = (Map<String, List<Enrollment>>)    request.getAttribute("courseEnrollments");
     Map<String, Integer>          enrollmentCounts  = (Map<String, Integer>)          request.getAttribute("enrollmentCounts");
     Map<String, List<Module>>     courseModules     = (Map<String, List<Module>>)     request.getAttribute("courseModules");
     Map<String, List<Assignment>> moduleAssignments = (Map<String, List<Assignment>>) request.getAttribute("moduleAssignments");
@@ -25,6 +26,7 @@
     int totalPending = request.getAttribute("totalPending") != null ? (Integer) request.getAttribute("totalPending") : 0;
 
     if (courses           == null) courses           = Collections.emptyList();
+    if (courseEnrollments == null) courseEnrollments = Collections.emptyMap();
     if (enrollmentCounts  == null) enrollmentCounts  = Collections.emptyMap();
     if (courseModules     == null) courseModules     = Collections.emptyMap();
     if (moduleAssignments == null) moduleAssignments = Collections.emptyMap();
@@ -322,6 +324,60 @@
                             </div>
                         </div>
                         <% } } %>
+                    </div>
+
+                    <!-- Class List -->
+                    <%
+                        List<Enrollment> classEnrollments = courseEnrollments.get(c.getC_id());
+                        if (classEnrollments == null) classEnrollments = new ArrayList<Enrollment>();
+                        Set<String> enrolledIds = new HashSet<String>();
+                        for (Enrollment en : classEnrollments) enrolledIds.add(en.getStudent_id());
+                    %>
+                    <div class="detail-section" style="margin-top:28px;">
+                        <div class="detail-section-header">
+                            <span class="detail-section-label">Class List</span>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <span class="count-chip"><%= classEnrollments.size() %> enrolled</span>
+                                <button class="action-btn" style="font-size:12px;padding:5px 12px;"
+                                        onclick="openEnrollModal('<%= c.getC_id() %>')">
+                                    + Enroll Student
+                                </button>
+                            </div>
+                        </div>
+                        <% if (classEnrollments.isEmpty()) { %>
+                        <div class="no-items-msg">No students enrolled yet.</div>
+                        <% } else { %>
+                        <table class="data-table" style="margin-top:6px;">
+                            <thead>
+                                <tr><th>Email</th><th>Name</th><th>Enrolled</th><th>Action</th></tr>
+                            </thead>
+                            <tbody>
+                            <% for (Enrollment en : classEnrollments) {
+                                   User stu = studentMap.get(en.getStudent_id());
+                                   String stuEmail  = (stu != null) ? stu.getEmail() : en.getStudent_id();
+                                   String stuName   = (stu != null) ? stu.getFirstName() + " " + stu.getLastName() : "—";
+                                   String enrolledAt = en.getEnrolled_at() != null
+                                           ? en.getEnrolled_at().substring(0, Math.min(10, en.getEnrolled_at().length()))
+                                           : "—";
+                            %>
+                            <tr>
+                                <td style="font-size:13px"><%= stuEmail %></td>
+                                <td style="font-size:13px"><%= stuName %></td>
+                                <td style="font-size:12px;color:rgba(255,255,255,0.6)"><%= enrolledAt %></td>
+                                <td>
+                                    <form method="POST" action="<%= cp %>/Course" style="display:inline"
+                                          onsubmit="return confirm('Drop <%= stuEmail %> from this course?')">
+                                        <input type="hidden" name="action"    value="dropStudent">
+                                        <input type="hidden" name="courseId"  value="<%= c.getC_id() %>">
+                                        <input type="hidden" name="studentId" value="<%= en.getStudent_id() %>">
+                                        <button type="submit" class="action-btn danger" style="font-size:11px;padding:4px 10px;">Drop</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <% } %>
+                            </tbody>
+                        </table>
+                        <% } %>
                     </div>
 
                     <!-- Student Submissions -->
@@ -704,6 +760,52 @@
     </div>
 </div>
 
+<!-- Enroll Student Modal -->
+<div id="enrollModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:580px;width:90%;">
+        <h2>Enroll Student</h2>
+        <input type="text" id="enrollSearch" placeholder="Search by email or name..."
+               oninput="filterEnrollRows()"
+               style="width:100%;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);
+                      background:rgba(255,255,255,0.1);color:white;font-size:14px;outline:none;margin-bottom:14px;">
+        <input type="hidden" id="enrollCourseId">
+        <div style="max-height:340px;overflow-y:auto;">
+            <table class="data-table" id="enrollStudentTable">
+                <thead><tr><th>Email</th><th>Name</th><th>Action</th></tr></thead>
+                <tbody>
+                <%
+                    // Pre-render all students; JS controls which are visible per course
+                    // Each row stores studentId as data attribute for filtering
+                %>
+                <% for (User s : students) { %>
+                <tr data-uid="<%= s.getU_id() %>"
+                    data-email="<%= s.getEmail().toLowerCase() %>"
+                    data-name="<%= (s.getFirstName() + " " + s.getLastName()).toLowerCase().trim() %>">
+                    <td style="font-size:13px"><%= s.getEmail() %></td>
+                    <td style="font-size:13px"><%= s.getFirstName() %> <%= s.getLastName() %></td>
+                    <td>
+                        <form method="POST" action="<%= cp %>/Course" style="display:inline"
+                              class="enroll-form">
+                            <input type="hidden" name="action"    value="enrollStudent">
+                            <input type="hidden" name="courseId"  class="enroll-course-field" value="">
+                            <input type="hidden" name="studentId" value="<%= s.getU_id() %>">
+                            <button type="submit" class="enroll-btn action-btn"
+                                    style="font-size:11px;padding:4px 12px;">Enroll</button>
+                        </form>
+                        <span class="already-enrolled-label"
+                              style="display:none;font-size:11px;color:rgba(60,200,120,0.85);padding:4px 10px;">&#10003; Enrolled</span>
+                    </td>
+                </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn-cancel" onclick="closeModal('enrollModal')">Close</button>
+        </div>
+    </div>
+</div>
+
 <!-- Grade Modal -->
 <div id="gradeModal" class="modal-overlay">
     <div class="modal-box">
@@ -756,7 +858,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 
 window.addEventListener('click', function(e) {
     ['addModal','editCourseModal','addModuleModal','editModuleModal',
-     'addAssignmentModal','editAssignmentModal','gradeModal'].forEach(function(id) {
+     'addAssignmentModal','editAssignmentModal','gradeModal','enrollModal'].forEach(function(id) {
         var m = document.getElementById(id);
         if (e.target === m) closeModal(id);
     });
@@ -822,6 +924,59 @@ function openEditAssignment(aId, courseId, title, instructions, dueDate, maxScor
     document.getElementById('eaDueDate').value       = dueDate || '';
     document.getElementById('eaMaxScore').value      = maxScore || '';
     openModal('editAssignmentModal');
+}
+
+// ── Enroll Student modal ──────────────────────────────────────────────────
+// enrolledSets: courseId → Set of enrolled studentIds (populated by selectCourse)
+var enrolledSets = {};
+
+function openEnrollModal(courseId) {
+    document.getElementById('enrollCourseId').value = courseId;
+    document.getElementById('enrollSearch').value   = '';
+
+    // Build enrolled set for this course from the class list table rows
+    var detail = document.getElementById('course-detail-' + courseId);
+    var enrolled = {};
+    if (detail) {
+        detail.querySelectorAll('form[action$="/Course"] input[name="studentId"]').forEach(function(inp) {
+            // only drop-student forms are in the class list
+            var form = inp.closest('form');
+            if (form && form.querySelector('input[value="dropStudent"]')) {
+                enrolled[inp.value] = true;
+            }
+        });
+    }
+    enrolledSets[courseId] = enrolled;
+
+    // Update each row: set courseId field and show Enroll vs Enrolled label
+    var rows = document.querySelectorAll('#enrollStudentTable tbody tr');
+    rows.forEach(function(row) {
+        var uid        = row.getAttribute('data-uid');
+        var btn        = row.querySelector('.enroll-btn');
+        var label      = row.querySelector('.already-enrolled-label');
+        var courseField = row.querySelector('.enroll-course-field');
+        if (courseField) courseField.value = courseId;
+        if (enrolled[uid]) {
+            if (btn)   btn.style.display   = 'none';
+            if (label) label.style.display = 'inline';
+        } else {
+            if (btn)   btn.style.display   = '';
+            if (label) label.style.display = 'none';
+        }
+        row.style.display = '';
+    });
+
+    openModal('enrollModal');
+}
+
+function filterEnrollRows() {
+    var q    = document.getElementById('enrollSearch').value.toLowerCase().trim();
+    var rows = document.querySelectorAll('#enrollStudentTable tbody tr');
+    rows.forEach(function(row) {
+        var email = row.getAttribute('data-email') || '';
+        var name  = row.getAttribute('data-name')  || '';
+        row.style.display = (!q || email.indexOf(q) !== -1 || name.indexOf(q) !== -1) ? '' : 'none';
+    });
 }
 
 // ── Grade modal helper ────────────────────────────────────────────────────

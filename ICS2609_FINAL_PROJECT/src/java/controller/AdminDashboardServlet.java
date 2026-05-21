@@ -55,11 +55,13 @@ public class AdminDashboardServlet extends HttpServlet {
                 ? dao.getCoursesByTeacher(userId)
                 : dao.getAllCourses();
 
-        Map<String, Integer> enrollmentCounts = new LinkedHashMap<String, Integer>();
+        Map<String, Integer>          enrollmentCounts  = new LinkedHashMap<String, Integer>();
+        Map<String, List<Enrollment>> courseEnrollments = new LinkedHashMap<String, List<Enrollment>>();
         Set<String> enrolledStudentIds = new HashSet<String>();
         for (Course c : courses) {
             List<Enrollment> enrs = dao.getEnrollmentsByCourse(c.getC_id());
             enrollmentCounts.put(c.getC_id(), enrs.size());
+            courseEnrollments.put(c.getC_id(), enrs);
             for (Enrollment e : enrs) enrolledStudentIds.add(e.getStudent_id());
         }
 
@@ -96,8 +98,9 @@ public class AdminDashboardServlet extends HttpServlet {
         request.setAttribute("userId",    userId);
 
         // ── Courses tab + Course Management ──────────────────────────────
-        request.setAttribute("courses",          courses);
-        request.setAttribute("enrollmentCounts", enrollmentCounts);
+        request.setAttribute("courses",           courses);
+        request.setAttribute("enrollmentCounts",  enrollmentCounts);
+        request.setAttribute("courseEnrollments", courseEnrollments);
 
         Map<String, List<Module>>     courseModules    = new LinkedHashMap<String, List<Module>>();
         Map<String, List<Assignment>> moduleAssignments = new LinkedHashMap<String, List<Assignment>>();

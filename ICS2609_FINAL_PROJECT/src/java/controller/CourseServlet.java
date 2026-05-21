@@ -4,6 +4,7 @@ import dao.MySqlBusinessDAO;
 import listeners.AppContextListener;
 import model.Assignment;
 import model.Course;
+import model.Enrollment;
 import model.Module;
 import util.SessionUtil;
 
@@ -70,7 +71,6 @@ public class CourseServlet extends HttpServlet {
         } else if ("status".equals(action)) {
             dao.updateCourseStatus(courseId, request.getParameter("status"));
 
-        // ── Module CRUD ───────────────────────────────────────────────────
         } else if ("addModule".equals(action)) {
             Module m = new Module();
             m.setCourse_id(courseId);
@@ -90,7 +90,6 @@ public class CourseServlet extends HttpServlet {
         } else if ("deleteModule".equals(action)) {
             dao.deleteModule(request.getParameter("moduleId"));
 
-        // ── Assignment CRUD ───────────────────────────────────────────────
         } else if ("addAssignment".equals(action)) {
             Assignment a = new Assignment();
             a.setModule_id(request.getParameter("moduleId"));
@@ -111,6 +110,18 @@ public class CourseServlet extends HttpServlet {
 
         } else if ("deleteAssignment".equals(action)) {
             dao.deleteAssignment(request.getParameter("assignmentId"));
+
+        } else if ("enrollStudent".equals(action)) {
+            String studentId = request.getParameter("studentId");
+            Enrollment existing = dao.getEnrollment(courseId, studentId);
+            if (existing != null && "dropped".equalsIgnoreCase(existing.getStatus())) {
+                dao.reEnrollStudent(courseId, studentId);
+            } else if (existing == null) {
+                dao.enrollStudent(courseId, studentId);
+            }
+
+        } else if ("dropStudent".equals(action)) {
+            dao.dropEnrollment(courseId, request.getParameter("studentId"));
         }
 
         response.sendRedirect(request.getContextPath()
