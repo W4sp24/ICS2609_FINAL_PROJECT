@@ -65,5 +65,6 @@ INSERT INTO USERS (username, password, role, createdDate) VALUES
 ('student32@mail.com', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', 'Guest', '2026-01-20'),
 ('student33@mail.com', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', 'Guest', '2026-01-20'),
 ('student34@mail.com', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', 'Guest', '2026-01-21'),
-('student35@mail.com', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', 'Guest', '2026-01-21');
+('student35@mail.com', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', 'Guest', '2026-01-21'),
+('sys.admin1@school.edu', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', 'Admin', '2026-01-01');
 

@@ -70,9 +70,7 @@ public class LoginServlet extends HttpServlet {
         if (activeSessions != null) activeSessions.add(user.getEmail());
 
         String derbyRole = user.getAppRole();
-        if ("SysAdmin".equalsIgnoreCase(derbyRole)) {
-            response.sendRedirect(request.getContextPath() + "/SysAdminDashboard");
-        } else if ("Admin".equalsIgnoreCase(derbyRole)) {
+        if ("Admin".equalsIgnoreCase(derbyRole)) {
             response.sendRedirect(request.getContextPath() + "/AdminDashboard");
         } else {
             response.sendRedirect(request.getContextPath() + "/GuestDashboard");
