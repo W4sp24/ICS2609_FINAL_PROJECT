@@ -47,10 +47,6 @@
 
                         <div class="input-group">
                             <input type="password" name="password" id="password" placeholder="PASSWORD" required>
-
-                            <button type="button" class="icon-btn" id="togglePassword">
-                                <img src="images/clear-button.png" alt="Toggle">
-                            </button>
                         </div>
 
                         <div class="recaptcha-wrap">
@@ -64,11 +60,5 @@
             </div>
         </div>
 
-        <script>
-            document.getElementById('togglePassword').addEventListener('click', function () {
-                var p = document.getElementById('password');
-                p.type = p.type === 'password' ? 'text' : 'password';
-            });
-        </script>
     </body>
 </html>
