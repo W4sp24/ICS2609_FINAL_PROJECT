@@ -6,6 +6,7 @@
         <title>Active Learning - Login</title>
 
         <link rel="stylesheet" type="text/css" href="css/login.css">
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </head>
 
     <body>
@@ -16,9 +17,6 @@
             <img src="images/logo-small.png" alt="Logo" class="small-logo">
 
             <div class="nav-links">
-                <a href="#">Page 3</a>
-                <a href="#">Page 2</a>
-                <a href="#">Page 1</a>
             </div>
         </div>
         <!-- MAIN CONTENT -->
@@ -41,14 +39,10 @@
                     <h1>LOGIN</h1>
                     <p>WELCOME</p>
 
-                    <form action="LoginServlet" method="POST">
+                    <form action="CaptchaServlet" method="POST">
 
                         <div class="input-group">
                             <input type="text" name="username" placeholder="USERNAME" required>
-
-                            <button type="submit" class="icon-btn">
-                                <img src="images/enter-button.png" alt="Enter">
-                            </button>
                         </div>
 
                         <div class="input-group">
@@ -58,6 +52,12 @@
                                 <img src="images/clear-button.png" alt="Toggle">
                             </button>
                         </div>
+
+                        <div class="recaptcha-wrap">
+                            <div class="g-recaptcha" data-sitekey="6Le2DposAAAAAObHCVLnSeZFyad7TAcx9PN-B9Q_"></div>
+                        </div>
+
+                        <button type="submit" class="login-submit-btn">LOGIN</button>
 
                     </form>
                 </div>

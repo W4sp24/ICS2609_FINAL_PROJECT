@@ -1,8 +1,10 @@
 package controller;
 
+import business.AuthService;
 import dao.MySqlBusinessDAO;
 import listeners.AppContextListener;
 import model.*;
+import util.SecurityUtil;
 import util.SessionUtil;
 
 import javax.servlet.ServletException;
@@ -12,10 +14,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(name = "GradeServlet", urlPatterns = {"/Grade"})
 public class GradeServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(GradeServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -26,47 +31,6 @@ public class GradeServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/index.jsp");
             return;
         }
-
-        MySqlBusinessDAO dao = (MySqlBusinessDAO) getServletContext()
-                .getAttribute(AppContextListener.MYSQL_DAO_KEY);
-
-        String username  = SessionUtil.getUsername(request);
-        String userId    = (String) session.getAttribute(SessionUtil.ATTR_USER_ID);
-        User   mysqlUser = dao.getUserByEmail(username);
-        String mysqlRole = (mysqlUser != null) ? mysqlUser.getAppRole() : "admin";
-
-        List<Course> courses = "teacher".equalsIgnoreCase(mysqlRole)
-                ? dao.getCoursesByTeacher(userId)
-                : dao.getAllCourses();
-
-        // pending submissions per course
-        Map<String, List<Submission>> submissionsByCourse = new LinkedHashMap<>();
-        // assignment lookup: assignmentId -> Assignment
-        Map<String, Assignment> assignmentMap = new HashMap<>();
-        // student lookup: studentId -> User
-        Map<String, User> studentMap = new HashMap<>();
-
-        for (User s : dao.getAllStudents()) {
-            studentMap.put(s.getU_id(), s);
-        }
-
-        int totalPending = 0;
-        for (Course c : courses) {
-            List<Submission> subs = dao.getSubmissionsByCourse(c.getC_id());
-            submissionsByCourse.put(c.getC_id(), subs);
-            totalPending += subs.size();
-
-            for (Assignment a : dao.getAssignmentsByCourse(c.getC_id())) {
-                assignmentMap.put(a.getA_id(), a);
-            }
-        }
-
-        request.setAttribute("courses",             courses);
-        request.setAttribute("submissionsByCourse", submissionsByCourse);
-        request.setAttribute("assignmentMap",       assignmentMap);
-        request.setAttribute("studentMap",          studentMap);
-        request.setAttribute("totalPending",        totalPending);
-        request.setAttribute("mysqlRole",           mysqlRole);
 
         response.sendRedirect(request.getContextPath() + "/AdminDashboard?section=courseManagement");
     }
@@ -81,29 +45,68 @@ public class GradeServlet extends HttpServlet {
             return;
         }
 
-        MySqlBusinessDAO dao = (MySqlBusinessDAO) getServletContext()
+        MySqlBusinessDAO dao  = (MySqlBusinessDAO) getServletContext()
                 .getAttribute(AppContextListener.MYSQL_DAO_KEY);
+        AuthService      auth = (AuthService) getServletContext()
+                .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
 
         String action   = request.getParameter("action");
+        String username = SessionUtil.getUsername(request);
+        String role     = SessionUtil.getRole(request);
+        String ip       = SecurityUtil.getClientIp(request);
         String userId   = (String) session.getAttribute(SessionUtil.ATTR_USER_ID);
         String courseId = request.getParameter("courseId");
         String redirect = "/AdminDashboard?section=courseManagement"
                 + (courseId != null && !courseId.isEmpty() ? "&courseId=" + courseId : "");
 
-        if ("grade".equals(action)) {
-            Grade grade = new Grade();
-            grade.setSubmission_id(request.getParameter("submissionId"));
-            grade.setGraded_by(userId);
-            grade.setScore(Double.parseDouble(request.getParameter("score")));
-            grade.setFeedback(request.getParameter("feedback"));
-            dao.addGrade(grade);
+        try {
+            if ("grade".equals(action)) {
+                String submissionId = request.getParameter("submissionId");
+                double score = Double.parseDouble(request.getParameter("score"));
+                String maxScoreParam = request.getParameter("maxScore");
+                if (score < 0) {
+                    response.sendRedirect(request.getContextPath() + redirect
+                            + "&flash=Score+cannot+be+negative&flashType=error");
+                    return;
+                }
+                if (maxScoreParam != null && !maxScoreParam.isEmpty()) {
+                    double maxScore = Double.parseDouble(maxScoreParam);
+                    if (score > maxScore) {
+                        response.sendRedirect(request.getContextPath() + redirect
+                                + "&flash=Score+exceeds+maximum+allowed&flashType=error");
+                        return;
+                    }
+                }
+                Grade grade = new Grade();
+                grade.setSubmission_id(submissionId);
+                grade.setGraded_by(userId);
+                grade.setScore(score);
+                grade.setFeedback(request.getParameter("feedback"));
+                dao.addGrade(grade);
+                auth.getLogDAO().log(username, "GRADE_ADDED: submission " + submissionId
+                        + " score=" + grade.getScore(), ip, role, "GradeServlet");
+                redirect += "&flash=Grade+saved&flashType=success";
 
-        } else if ("update".equals(action)) {
-            Grade grade = new Grade();
-            grade.setG_id(request.getParameter("gradeId"));
-            grade.setScore(Double.parseDouble(request.getParameter("score")));
-            grade.setFeedback(request.getParameter("feedback"));
-            dao.updateGrade(grade);
+            } else if ("update".equals(action)) {
+                String gradeId = request.getParameter("gradeId");
+                Grade grade = new Grade();
+                grade.setG_id(gradeId);
+                grade.setScore(Double.parseDouble(request.getParameter("score")));
+                grade.setFeedback(request.getParameter("feedback"));
+                dao.updateGrade(grade);
+                auth.getLogDAO().log(username, "GRADE_UPDATED: grade " + gradeId
+                        + " score=" + grade.getScore(), ip, role, "GradeServlet");
+                redirect += "&flash=Grade+updated&flashType=success";
+            }
+
+        } catch (NumberFormatException e) {
+            LOGGER.log(Level.WARNING, "GradeServlet invalid score format", e);
+            response.sendRedirect(request.getContextPath() + redirect + "&flash=Invalid+score+value&flashType=error");
+            return;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "GradeServlet DB error for action=" + action, e);
+            response.sendRedirect(request.getContextPath() + "/errors/error_500.jsp");
+            return;
         }
 
         response.sendRedirect(request.getContextPath() + redirect);

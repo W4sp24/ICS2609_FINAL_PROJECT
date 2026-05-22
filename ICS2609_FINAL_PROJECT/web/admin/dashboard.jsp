@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="model.ActivityLog,model.Course,model.Enrollment,model.Module,model.Submission,model.Assignment,model.User,java.util.List,java.util.Map,java.util.Set,java.util.HashSet,java.util.Collections,java.util.ArrayList"%>
+<%@page import="model.ActivityLog,model.Course,model.Enrollment,model.Module,model.Submission,model.Assignment,model.User,java.util.List,java.util.Map,java.util.Set,java.util.HashSet,java.util.Collections,java.util.ArrayList,util.SecurityUtil"%>
 <%
     // Auth DB + logs
     List<String[]>    allUsers       = (List<String[]>)    request.getAttribute("allUsers");
@@ -53,6 +53,9 @@
     <link rel="stylesheet" href="<%= cp %>/css/sysadminDashboard.css">
 </head>
 <body>
+
+<!-- Flash toast notification -->
+<div id="flash-toast"></div>
 
 <div id="background">
     <img class="twilight"            src="<%= cp %>/images/Twilight.png">
@@ -187,7 +190,7 @@
                 %>
                 <div class="course-card-item" id="course-card-<%= c.getC_id() %>"
                      onclick="selectCourse('<%= c.getC_id() %>')">
-                    <div class="course-card-title"><%= c.getTitle() %></div>
+                    <div class="course-card-title"><%= SecurityUtil.sanitizeHtml(c.getTitle()) %></div>
                     <div class="course-card-meta">
                         <span class="badge-<%= c.getStatus() %>"><%= c.getStatus() %></span>
                         <span style="font-size:11px;color:rgba(255,255,255,0.45);"><%= enrolled %> students</span>
@@ -218,9 +221,9 @@
                     <!-- Course header -->
                     <div class="course-detail-header">
                         <div class="course-title-block">
-                            <h2><%= c.getTitle() %></h2>
+                            <h2><%= SecurityUtil.sanitizeHtml(c.getTitle()) %></h2>
                             <% if (c.getDescription() != null && !c.getDescription().isEmpty()) { %>
-                            <p class="course-desc"><%= c.getDescription() %></p>
+                            <p class="course-desc"><%= SecurityUtil.sanitizeHtml(c.getDescription()) %></p>
                             <% } %>
                         </div>
                         <div class="course-header-actions">
@@ -265,7 +268,7 @@
                         <div class="module-accordion">
                             <div class="module-header" onclick="toggleModule('<%= m.getMod_id() %>')">
                                 <span class="module-order-badge">#<%= m.getOrder() %></span>
-                                <span class="module-title"><%= m.getTitle() %></span>
+                                <span class="module-title"><%= SecurityUtil.sanitizeHtml(m.getTitle()) %></span>
                                 <span class="module-assign-count"><%= assigns.size() %> assignments</span>
                                 <button class="action-btn" style="font-size:11px;padding:4px 10px;"
                                         onclick="event.stopPropagation();openEditModule('<%= m.getMod_id() %>','<%= c.getC_id() %>','<%= m.getTitle().replace("'","\\'") %>','<%= (m.getDescription()!=null?m.getDescription():"").replace("'","\\'") %>',<%= m.getOrder() %>)">
@@ -283,7 +286,7 @@
                             </div>
                             <div class="module-body" id="body-<%= m.getMod_id() %>">
                                 <% if (m.getDescription() != null && !m.getDescription().isEmpty()) { %>
-                                <p class="module-desc"><%= m.getDescription() %></p>
+                                <p class="module-desc"><%= SecurityUtil.sanitizeHtml(m.getDescription()) %></p>
                                 <% } %>
 
                                 <% if (assigns.isEmpty()) { %>
@@ -296,7 +299,7 @@
                                                ? String.format("%.0f", a.getMax_score()) + " pts" : "—";
                                 %>
                                 <div class="assignment-row">
-                                    <span class="assign-title"><%= a.getTitle() %></span>
+                                    <span class="assign-title"><%= SecurityUtil.sanitizeHtml(a.getTitle()) %></span>
                                     <div class="assign-meta">
                                         <span>Due: <%= dueDisp %></span>
                                         <span>Max: <%= maxDisp %></span>
@@ -553,11 +556,11 @@
                 <% int li = 1; for (ActivityLog log : recentLogs) { %>
                 <tr>
                     <td style="color:rgba(255,255,255,0.45)"><%= li++ %></td>
-                    <td><%= log.getUsername() %></td>
-                    <td><%= log.getAction() %></td>
-                    <td style="font-size:12px;color:rgba(255,255,255,0.6)"><%= log.getIpAddress() %></td>
-                    <td style="font-size:12px"><%= log.getRole() %></td>
-                    <td style="font-size:12px;color:rgba(255,255,255,0.6)"><%= log.getActivityTime() %></td>
+                    <td><%= SecurityUtil.sanitizeHtml(log.getUsername()) %></td>
+                    <td><%= SecurityUtil.sanitizeHtml(log.getAction()) %></td>
+                    <td style="font-size:12px;color:rgba(255,255,255,0.6)"><%= SecurityUtil.sanitizeHtml(log.getIpAddress()) %></td>
+                    <td style="font-size:12px"><%= SecurityUtil.sanitizeHtml(log.getRole()) %></td>
+                    <td style="font-size:12px;color:rgba(255,255,255,0.6)"><%= SecurityUtil.sanitizeHtml(log.getFormatDate()) %></td>
                 </tr>
                 <% } %>
                 </tbody>
@@ -815,6 +818,7 @@
             <input type="hidden" name="action"       value="grade">
             <input type="hidden" name="submissionId" id="gradeSubId">
             <input type="hidden" name="courseId"     id="gradeCourseId">
+            <input type="hidden" name="maxScore"     id="gradeMaxHidden">
             <div class="form-group">
                 <label>Score <span id="gradeMax" style="color:rgba(255,255,255,0.5)"></span></label>
                 <input type="number" name="score" id="gradeScore" min="0" step="0.5" required placeholder="0">
@@ -984,10 +988,29 @@ function openGrade(subId, asgnTitle, student, maxScore, courseId) {
     document.getElementById('gradeSubId').value    = subId;
     document.getElementById('gradeCourseId').value = courseId || '';
     document.getElementById('gradeInfo').textContent = student + ' — ' + asgnTitle;
-    document.getElementById('gradeMax').textContent  = maxScore !== '—' ? '/ ' + maxScore : '';
-    document.getElementById('gradeScore').max        = maxScore !== '—' ? maxScore : '';
+    document.getElementById('gradeMax').textContent       = maxScore !== '—' ? '/ ' + maxScore : '';
+    document.getElementById('gradeScore').max             = maxScore !== '—' ? maxScore : '';
+    document.getElementById('gradeMaxHidden').value       = maxScore !== '—' ? maxScore : '';
     openModal('gradeModal');
 }
+
+// ── Flash toast ───────────────────────────────────────────────────────────
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    var msg  = params.get('flash');
+    var type = params.get('flashType') || 'success';
+    if (!msg) return;
+    var toast = document.getElementById('flash-toast');
+    toast.className = 'show toast-' + type;
+    toast.innerHTML = '<span>' + msg + '</span>'
+        + '<button class="toast-close" onclick="this.parentElement.classList.remove(\'show\')">&#x2715;</button>';
+    setTimeout(function() { toast.classList.remove('show'); }, 4500);
+    // Clean URL without reloading
+    var url = new URL(window.location.href);
+    url.searchParams.delete('flash');
+    url.searchParams.delete('flashType');
+    window.history.replaceState({}, '', url.toString());
+})();
 </script>
 
 </body>

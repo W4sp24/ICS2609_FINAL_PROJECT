@@ -24,13 +24,12 @@ public class LoginServlet extends HttpServlet {
                 .getAttribute(AppContextListener.AUTH_SERVICE_KEY);
         String ipAddress = SecurityUtil.getClientIp(request);
 
-        // DEBUG: CAPTCHA guard temporarily disabled for direct login testing
-        // HttpSession preLoginSession = request.getSession(false);
-        // if (preLoginSession == null || !SessionUtil.isCaptchaVerified(preLoginSession)) {
-        //     LOGGER.warning("Direct LoginServlet access without CAPTCHA from IP: " + ipAddress);
-        //     response.sendRedirect(request.getContextPath() + "/index.jsp");
-        //     return;
-        // }
+        HttpSession preLoginSession = request.getSession(false);
+        if (preLoginSession == null || !SessionUtil.isCaptchaVerified(preLoginSession)) {
+            LOGGER.warning("Direct LoginServlet access without CAPTCHA from IP: " + ipAddress);
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            return;
+        }
 
         String rawUsername = request.getParameter("username");
         String rawPassword = request.getParameter("password");

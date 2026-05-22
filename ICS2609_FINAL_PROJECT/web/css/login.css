@@ -165,6 +165,32 @@ form{
     transform:scale(1.08);
     background:rgba(255,255,255,0.08);
 }
+/* -------------------------------------------- reCAPTCHA + submit */
+.recaptcha-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+}
+.login-submit-btn {
+    align-self: center;
+    width: 200px;
+    height: 52px;
+    border: none;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.92);
+    color: #2f5f79;
+    font-size: 22px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    font-family: 'Daruma', sans-serif;
+    transition: 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.login-submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
 /* -------------------------------------------organize later */
 
 @media screen and (max-width:900px){

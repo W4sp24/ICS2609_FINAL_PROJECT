@@ -7,10 +7,14 @@ package dao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import util.SecurityUtil;
 
 public class DerbyAuthDAO extends BaseDAO {
+    private static final Logger LOGGER = Logger.getLogger(DerbyAuthDAO.class.getName());
+
     private final String driver, url, user, pass;
 
     public DerbyAuthDAO(ServletContext context) {
@@ -42,7 +46,7 @@ public class DerbyAuthDAO extends BaseDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "validateLogin failed for user " + username, e);
         }
         return role;
     }
@@ -60,7 +64,9 @@ public class DerbyAuthDAO extends BaseDAO {
                     rs.getString("createdDate")
                 });
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "getAllUsers failed", e);
+        }
         return users;
     }
 }

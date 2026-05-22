@@ -117,9 +117,7 @@ public class ReportServlet extends HttpServlet {
                     break;
                 }
 
-                // ---------------------------------------------------------------
-                // Report 3: Class List — teacher's courses, Admin only
-                // ---------------------------------------------------------------
+ 
                 case "class_list": {
                     if (!SessionUtil.isAdmin(request)) {
                         response.sendRedirect(request.getContextPath() + "/errors/unauthorized.jsp");
@@ -132,9 +130,12 @@ public class ReportServlet extends HttpServlet {
                         return;
                     }
 
-                    List<Course> courses = dao.getCoursesByTeacher(teacher.getU_id());
+                    // Head admins (MySQL role="admin") see all courses; teachers see only their own
+                    String classListRole = teacher.getAppRole();
+                    List<Course> courses = "teacher".equalsIgnoreCase(classListRole)
+                            ? dao.getCoursesByTeacher(teacher.getU_id())
+                            : dao.getAllCourses();
 
-                    // Build student lookup map once
                     Map<String, User> studentMap = new LinkedHashMap<String, User>();
                     for (User s : dao.getAllStudents()) {
                         studentMap.put(s.getU_id(), s);
@@ -163,9 +164,7 @@ public class ReportServlet extends HttpServlet {
                     break;
                 }
 
-                // ---------------------------------------------------------------
-                // Report 4: Time-Bound — logs (admin role) or submissions (teacher)
-                // ---------------------------------------------------------------
+   
                 case "time_bound": {
                     if (!SessionUtil.isAdmin(request)) {
                         response.sendRedirect(request.getContextPath() + "/errors/unauthorized.jsp");
@@ -290,9 +289,7 @@ public class ReportServlet extends HttpServlet {
                     break;
                 }
 
-                // ---------------------------------------------------------------
-                // Report 4: Grade Report — student only
-                // ---------------------------------------------------------------
+          
                 case "grades": {
                     if (!SessionUtil.isAuthenticated(request) || SessionUtil.isAdmin(request)) {
                         response.sendRedirect(request.getContextPath() + "/errors/unauthorized.jsp");
@@ -363,7 +360,9 @@ public class ReportServlet extends HttpServlet {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/errors/error_500.jsp");
+            if (!response.isCommitted()) {
+                response.sendRedirect(request.getContextPath() + "/errors/error_500.jsp");
+            }
         }
     }
 

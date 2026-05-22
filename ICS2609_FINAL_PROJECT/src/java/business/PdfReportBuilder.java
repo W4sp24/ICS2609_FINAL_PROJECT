@@ -26,9 +26,7 @@ public class PdfReportBuilder {
 
     public PdfReportBuilder() {}
 
-    // =========================================================================
-    // Page Event: running header, footer, "Page X of Y"
-    // =========================================================================
+
 
     private static class HeaderFooterPageEvent extends PdfPageEventHelper {
         private final String headerText;
@@ -154,9 +152,6 @@ public class PdfReportBuilder {
         document.close();
     }
 
-    // =========================================================================
-    // Private cell helpers
-    // =========================================================================
 
     private PdfPCell dataCell(String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "-", font));
@@ -183,9 +178,7 @@ public class PdfReportBuilder {
         table.addCell(cell);
     }
 
-    // =========================================================================
-    // Private row-building methods — one per report type
-    // =========================================================================
+
 
     private void buildUserRows(PdfPTable table, List<User> userList,
             String currentAdmin) {
@@ -357,9 +350,7 @@ public class PdfReportBuilder {
         }
     }
 
-    // =========================================================================
-    // Public API — each method orchestrates its own sequence of steps
-    // =========================================================================
+   
 
     public void generateUserReport(OutputStream os, List<User> userList,
             String currentAdmin, String headerText, String footerText,

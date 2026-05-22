@@ -133,5 +133,5 @@ public class TestServletContextStub implements ServletContext {
     @Override public JspConfigDescriptor getJspConfigDescriptor() { return null; }
     @Override public ClassLoader getClassLoader() { return getClass().getClassLoader(); }
     @Override public void declareRoles(String... roleNames) {}
-    @Override public String getVirtualServerName() { return "localhost"; }
+    public String getVirtualServerName() { return "localhost"; }
 }
