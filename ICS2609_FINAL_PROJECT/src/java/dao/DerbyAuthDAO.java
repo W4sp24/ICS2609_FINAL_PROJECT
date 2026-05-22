@@ -69,4 +69,55 @@ public class DerbyAuthDAO extends BaseDAO {
         }
         return users;
     }
+
+    public void addUser(String username, String plainPassword, String role) throws SQLException {
+        String hashed  = SecurityUtil.hashPassword(plainPassword);
+        String created = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+        String sql = "INSERT INTO USERS (username, password, role, createdDate) VALUES (?, ?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username.trim().toLowerCase());
+            ps.setString(2, hashed);
+            ps.setString(3, role);
+            ps.setString(4, created);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "addUser failed for " + username, e);
+            throw new SQLException("addUser failed: " + e.getMessage(), e);
+        }
+    }
+
+    public void updateUser(String username, String newPassword, String newRole) throws SQLException {
+        boolean changePass = (newPassword != null && !newPassword.trim().isEmpty());
+        String sql = changePass
+                ? "UPDATE USERS SET password = ?, role = ? WHERE username = ?"
+                : "UPDATE USERS SET role = ? WHERE username = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (changePass) {
+                ps.setString(1, SecurityUtil.hashPassword(newPassword.trim()));
+                ps.setString(2, newRole);
+                ps.setString(3, username);
+            } else {
+                ps.setString(1, newRole);
+                ps.setString(2, username);
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "updateUser failed for " + username, e);
+            throw new SQLException("updateUser failed: " + e.getMessage(), e);
+        }
+    }
+
+    public void deleteUser(String username) throws SQLException {
+        String sql = "DELETE FROM USERS WHERE username = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "deleteUser failed for " + username, e);
+            throw new SQLException("deleteUser failed: " + e.getMessage(), e);
+        }
+    }
 }

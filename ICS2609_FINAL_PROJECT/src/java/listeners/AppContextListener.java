@@ -9,6 +9,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import java.util.logging.Logger;
+import util.TraceLogger;
 
 @WebListener
 public class AppContextListener implements ServletContextListener {
@@ -20,6 +21,7 @@ public class AppContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext ctx = sce.getServletContext();
+        TraceLogger.init(ctx);
         LOGGER.info("=== ICS2609 Course Management System — Application Starting ===");
 
         DerbyAuthDAO   authDAO  = new DerbyAuthDAO(ctx);
@@ -44,5 +46,6 @@ public class AppContextListener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         LOGGER.info("=== ICS2609 Course Management System — Application Shutting Down ===");
         sce.getServletContext().removeAttribute(AUTH_SERVICE_KEY);
+        TraceLogger.shutdown();
     }
 }

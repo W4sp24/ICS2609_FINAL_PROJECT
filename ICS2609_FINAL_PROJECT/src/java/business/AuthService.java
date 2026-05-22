@@ -51,31 +51,24 @@ public class AuthService {
     }
 
     public void logUnauthorizedAccess(String username, String role, String ipAddress, String requestedUrl) {
-        String activity = "UNAUTHORIZED_ACCESS: " + requestedUrl;
         LOGGER.warning("Unauthorized access attempt by [" + username + "/" + role
                 + "] to [" + requestedUrl + "] from " + ipAddress);
-        logDAO.log(username, activity, ipAddress, role, "AuthFilter/RoleFilter");
     }
 
     public void logCaptchaFailure(String ipAddress, int attemptNumber) {
-        String activity = "CAPTCHA_FAIL (attempt " + attemptNumber + ")";
         LOGGER.warning("CAPTCHA failure #" + attemptNumber + " from IP: " + ipAddress);
-        logDAO.log("UNKNOWN", activity, ipAddress, "UNKNOWN", "CaptchaServlet");
     }
 
     public void logCaptchaLockout(String ipAddress) {
         LOGGER.warning("CAPTCHA LOCKOUT triggered from IP: " + ipAddress);
-        logDAO.log("UNKNOWN", "CAPTCHA_LOCKOUT", ipAddress, "UNKNOWN", "CaptchaServlet");
     }
 
     public void logCaptchaSuccess(String ipAddress) {
         LOGGER.info("CAPTCHA verified successfully from IP: " + ipAddress);
-        logDAO.log("UNKNOWN", "CAPTCHA_SUCCESS", ipAddress, "UNKNOWN", "CaptchaServlet");
     }
 
     public void logSessionExpired(String ipAddress, String requestedUrl) {
-        String activity = "SESSION_EXPIRED accessing: " + requestedUrl;
-        logDAO.log("UNKNOWN", activity, ipAddress, "UNKNOWN", "AuthFilter");
+        LOGGER.warning("Session expired — access to [" + requestedUrl + "] from " + ipAddress);
     }
 
     public DerbyAuthDAO getAuthDAO() { return authDAO; }

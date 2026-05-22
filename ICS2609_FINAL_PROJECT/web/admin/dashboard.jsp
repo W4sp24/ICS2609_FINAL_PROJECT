@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="model.ActivityLog,model.Course,model.Enrollment,model.Module,model.Submission,model.Assignment,model.User,java.util.List,java.util.Map,java.util.Set,java.util.HashSet,java.util.Collections,java.util.ArrayList,util.SecurityUtil"%>
+<%@page import="model.ActivityLog,model.Course,model.Enrollment,model.Module,model.Submission,model.Assignment,model.User,java.util.List,java.util.Map,java.util.Set,java.util.HashSet,java.util.Collections,java.util.ArrayList,util.SecurityUtil,util.SessionUtil"%>
 <%
     // Auth DB + logs
     List<String[]>    allUsers       = (List<String[]>)    request.getAttribute("allUsers");
@@ -370,9 +370,10 @@
                                 <td>
                                     <form method="POST" action="<%= cp %>/Course" style="display:inline"
                                           onsubmit="return confirm('Drop <%= stuEmail %> from this course?')">
-                                        <input type="hidden" name="action"    value="dropStudent">
-                                        <input type="hidden" name="courseId"  value="<%= c.getC_id() %>">
-                                        <input type="hidden" name="studentId" value="<%= en.getStudent_id() %>">
+                                        <input type="hidden" name="action"       value="dropStudent">
+                                        <input type="hidden" name="courseId"     value="<%= c.getC_id() %>">
+                                        <input type="hidden" name="studentId"    value="<%= en.getStudent_id() %>">
+                                        <input type="hidden" name="studentEmail" value="<%= SecurityUtil.sanitizeHtml(stuEmail) %>">
                                         <button type="submit" class="action-btn danger" style="font-size:11px;padding:4px 10px;">Drop</button>
                                     </form>
                                 </td>
@@ -491,13 +492,18 @@
         <div class="panel" style="margin-top:28px;">
             <div class="panel-header">
                 <h2>Authentication Database</h2>
-                <div style="display:flex;gap:10px;align-items:center;">
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                     <span style="font-size:13px;color:rgba(255,255,255,0.55);"><%= totalUsers %> users &bull; <%= onlineCount %> online</span>
                     <a href="<%= cp %>/ReportServlet?type=all_records" target="_blank">
                         <button style="border:none;padding:7px 16px;border-radius:10px;background:rgba(255,255,255,0.18);color:white;cursor:pointer;font-size:12px;">
                             &#128438; All Records PDF
                         </button>
                     </a>
+                    <button type="button" class="action-btn"
+                            onclick="document.getElementById('add-derby-user-modal').style.display='flex'"
+                            style="font-size:12px;padding:6px 16px;">
+                        + Add User
+                    </button>
                 </div>
             </div>
             <section class="stats-grid" style="margin:16px 0 8px;">
@@ -510,18 +516,35 @@
             <div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5)">No users found.</div>
             <% } else { %>
             <table class="data-table">
-                <thead><tr><th>#</th><th>Username</th><th>Derby Role</th><th>Registered</th><th>Status</th></tr></thead>
+                <thead><tr><th>#</th><th>Username</th><th>Derby Role</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
                 <% int idx = 1; for (String[] u : allUsers) {
                        boolean isOnline  = activeSessions.contains(u[0]);
+                       boolean isSelf    = u[0].equalsIgnoreCase(SessionUtil.getUsername(request));
                        String  roleBadge = "Admin".equals(u[1]) ? "badge-admin" : "badge-guest";
                 %>
                 <tr class="<%= isOnline ? "row-online" : "" %>">
                     <td style="color:rgba(255,255,255,0.45)"><%= idx++ %></td>
-                    <td><strong><%= isOnline ? "(" + u[0] + ")" : u[0] %></strong></td>
+                    <td><strong><%= isOnline ? "(" + SecurityUtil.sanitizeHtml(u[0]) + ")" : SecurityUtil.sanitizeHtml(u[0]) %></strong></td>
                     <td><span class="<%= roleBadge %>"><%= u[1] %></span></td>
                     <td style="font-size:12px;color:rgba(255,255,255,0.6)"><%= u[2] %></td>
                     <td><% if (isOnline) { %><span class="badge-online">&#128994; Online</span><% } else { %><span style="color:rgba(255,255,255,0.35);font-size:13px">&#8212;</span><% } %></td>
+                    <td style="white-space:nowrap;">
+                        <button class="action-btn" style="font-size:11px;padding:3px 10px;"
+                                onclick="openEditDerbyModal('<%= SecurityUtil.sanitizeHtml(u[0]) %>','<%= u[1] %>')">
+                            Edit
+                        </button>
+                        <% if (!isSelf) { %>
+                        <form method="post" action="<%= cp %>/DerbyUser" style="display:inline;"
+                              onsubmit="return confirm('Delete user <%= SecurityUtil.sanitizeHtml(u[0]) %>?')">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="delUsername" value="<%= SecurityUtil.sanitizeHtml(u[0]) %>">
+                            <button type="submit" class="action-btn danger" style="font-size:11px;padding:3px 10px;">
+                                Delete
+                            </button>
+                        </form>
+                        <% } %>
+                    </td>
                 </tr>
                 <% } %>
                 </tbody>
@@ -537,13 +560,14 @@
         <div class="panel" style="margin-top:28px;">
             <div class="panel-header">
                 <h2>Activity Log</h2>
-                <form method="get" action="<%= cp %>/ReportServlet" target="_blank"
+                <form id="logReportFormLogs" method="get" action="<%= cp %>/ReportServlet" target="_blank"
+                      onsubmit="return validateLogReportDates(this, event)"
                       style="display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;">
                     <input type="hidden" name="type" value="time_bound">
-                    <input type="date" name="startDate" required style="padding:5px 8px;border-radius:8px;border:none;font-size:12px;">
-                    <input type="date" name="endDate"   required style="padding:5px 8px;border-radius:8px;border:none;font-size:12px;">
+                    <input type="date" name="startDate" style="padding:5px 8px;border-radius:8px;border:none;font-size:12px;">
+                    <input type="date" name="endDate"   style="padding:5px 8px;border-radius:8px;border:none;font-size:12px;">
                     <button type="submit" style="padding:5px 14px;border-radius:8px;border:none;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:12px;">
-                        &#128438; Time-Bound PDF
+                        &#128438; Log Report PDF
                     </button>
                 </form>
             </div>
@@ -552,7 +576,7 @@
             <% } else { %>
             <table class="data-table">
                 <thead><tr><th>#</th><th>Username</th><th>Action</th><th>IP Address</th><th>Role</th><th>Timestamp</th></tr></thead>
-                <tbody>
+                <tbody id="log-table-body">
                 <% int li = 1; for (ActivityLog log : recentLogs) { %>
                 <tr>
                     <td style="color:rgba(255,255,255,0.45)"><%= li++ %></td>
@@ -565,6 +589,8 @@
                 <% } %>
                 </tbody>
             </table>
+            <div class="pagination-controls" id="log-pagination"></div>
+            <div class="pagination-info" id="log-page-info"></div>
             <% } %>
         </div>
     </div>
@@ -612,21 +638,22 @@
             </div>
             <div class="panel">
                 <div class="panel-header">
-                    <h2>Time-Bound Activity Report</h2>
+                    <h2>Activity Log Report</h2>
                     <span style="font-size:13px;color:rgba(255,255,255,0.55);">Filter by date range</span>
                 </div>
                 <div style="padding:20px;">
-                    <p style="color:rgba(255,255,255,0.65);font-size:13px;margin-bottom:16px;">Generates a PDF of activity logs or course submissions within a selected date range.</p>
-                    <form method="get" action="<%= cp %>/ReportServlet" target="_blank"
+                    <p style="color:rgba(255,255,255,0.65);font-size:13px;margin-bottom:16px;">Generates a PDF of activity logs within a selected date range.</p>
+                    <form id="logReportFormReports" method="get" action="<%= cp %>/ReportServlet" target="_blank"
+                          onsubmit="return validateLogReportDates(this, event)"
                           style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                         <input type="hidden" name="type" value="time_bound">
                         <div style="display:flex;flex-direction:column;gap:4px;">
                             <label style="font-size:12px;color:rgba(255,255,255,0.6);">Start Date</label>
-                            <input type="date" name="startDate" required style="padding:7px 10px;border-radius:8px;border:none;font-size:13px;min-width:140px;">
+                            <input type="date" name="startDate" style="padding:7px 10px;border-radius:8px;border:none;font-size:13px;min-width:140px;">
                         </div>
                         <div style="display:flex;flex-direction:column;gap:4px;">
                             <label style="font-size:12px;color:rgba(255,255,255,0.6);">End Date</label>
-                            <input type="date" name="endDate" required style="padding:7px 10px;border-radius:8px;border:none;font-size:13px;min-width:140px;">
+                            <input type="date" name="endDate" style="padding:7px 10px;border-radius:8px;border:none;font-size:13px;min-width:140px;">
                         </div>
                         <div style="margin-top:18px;">
                             <button type="submit" style="padding:8px 20px;border-radius:10px;border:none;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:13px;font-weight:600;">
@@ -789,9 +816,10 @@
                     <td>
                         <form method="POST" action="<%= cp %>/Course" style="display:inline"
                               class="enroll-form">
-                            <input type="hidden" name="action"    value="enrollStudent">
-                            <input type="hidden" name="courseId"  class="enroll-course-field" value="">
-                            <input type="hidden" name="studentId" value="<%= s.getU_id() %>">
+                            <input type="hidden" name="action"       value="enrollStudent">
+                            <input type="hidden" name="courseId"     class="enroll-course-field" value="">
+                            <input type="hidden" name="studentId"    value="<%= s.getU_id() %>">
+                            <input type="hidden" name="studentEmail" value="<%= SecurityUtil.sanitizeHtml(s.getEmail()) %>">
                             <button type="submit" class="enroll-btn action-btn"
                                     style="font-size:11px;padding:4px 12px;">Enroll</button>
                         </form>
@@ -815,10 +843,12 @@
         <h2>Grade Submission</h2>
         <p id="gradeInfo" style="color:rgba(255,255,255,0.7);margin-bottom:18px;font-size:14px"></p>
         <form method="POST" action="<%= cp %>/Grade">
-            <input type="hidden" name="action"       value="grade">
-            <input type="hidden" name="submissionId" id="gradeSubId">
-            <input type="hidden" name="courseId"     id="gradeCourseId">
-            <input type="hidden" name="maxScore"     id="gradeMaxHidden">
+            <input type="hidden" name="action"          value="grade">
+            <input type="hidden" name="submissionId"  id="gradeSubId">
+            <input type="hidden" name="courseId"      id="gradeCourseId">
+            <input type="hidden" name="maxScore"      id="gradeMaxHidden">
+            <input type="hidden" name="assignTitle"   id="gradeAssignTitle">
+            <input type="hidden" name="studentEmail"  id="gradeStudentEmail">
             <div class="form-group">
                 <label>Score <span id="gradeMax" style="color:rgba(255,255,255,0.5)"></span></label>
                 <input type="number" name="score" id="gradeScore" min="0" step="0.5" required placeholder="0">
@@ -985,9 +1015,11 @@ function filterEnrollRows() {
 
 // ── Grade modal helper ────────────────────────────────────────────────────
 function openGrade(subId, asgnTitle, student, maxScore, courseId) {
-    document.getElementById('gradeSubId').value    = subId;
-    document.getElementById('gradeCourseId').value = courseId || '';
-    document.getElementById('gradeInfo').textContent = student + ' — ' + asgnTitle;
+    document.getElementById('gradeSubId').value      = subId;
+    document.getElementById('gradeCourseId').value   = courseId || '';
+    document.getElementById('gradeAssignTitle').value = asgnTitle;
+    document.getElementById('gradeStudentEmail').value = student;
+    document.getElementById('gradeInfo').textContent  = student + ' — ' + asgnTitle;
     document.getElementById('gradeMax').textContent       = maxScore !== '—' ? '/ ' + maxScore : '';
     document.getElementById('gradeScore').max             = maxScore !== '—' ? maxScore : '';
     document.getElementById('gradeMaxHidden').value       = maxScore !== '—' ? maxScore : '';
@@ -1011,7 +1043,206 @@ function openGrade(subId, asgnTitle, student, maxScore, courseId) {
     url.searchParams.delete('flashType');
     window.history.replaceState({}, '', url.toString());
 })();
+
+// ---- Log report date validation ----
+function validateLogReportDates(form, e) {
+    var start = form.querySelector('[name=startDate]').value;
+    var end   = form.querySelector('[name=endDate]').value;
+    var msg   = null;
+    if (!start || !end) {
+        msg = 'Please select both a start date and an end date.';
+    } else if (new Date(start) > new Date(end)) {
+        msg = 'Start date cannot be after end date.';
+    }
+    if (msg) {
+        e.preventDefault();
+        showLogReportError(form, msg);
+        return false;
+    }
+    return true;
+}
+function showLogReportError(form, msg) {
+    var existing = form.querySelector('.log-report-error');
+    if (existing) existing.remove();
+    var box = document.createElement('div');
+    box.className = 'log-report-error';
+    box.style.cssText = 'margin-top:8px;width:100%;padding:8px 14px;border-radius:8px;'
+        + 'background:rgba(192,57,43,0.9);color:white;font-size:13px;'
+        + 'display:flex;align-items:center;gap:8px;';
+    box.innerHTML = '<span>&#9888;</span><span>' + msg + '</span>'
+        + '<button onclick="this.parentElement.remove()" style="margin-left:auto;'
+        + 'background:none;border:none;color:white;cursor:pointer;font-size:16px;">&times;</button>';
+    form.appendChild(box);
+    setTimeout(function() { if (box.parentElement) box.remove(); }, 5000);
+}
+
+// ---- Log table pagination ----
+(function() {
+    var ROWS_PER_PAGE = 10;
+    var tbody = document.getElementById('log-table-body');
+    if (!tbody) return;
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    var totalRows = rows.length;
+    if (totalRows <= ROWS_PER_PAGE) return;
+    var totalPages = Math.ceil(totalRows / ROWS_PER_PAGE);
+    var currentPage = 1;
+
+    function renderPage(page) {
+        currentPage = page;
+        rows.forEach(function(r, i) {
+            r.style.display = (i >= (page - 1) * ROWS_PER_PAGE && i < page * ROWS_PER_PAGE) ? '' : 'none';
+        });
+        buildControls();
+        var info = document.getElementById('log-page-info');
+        if (info) info.textContent = 'Page ' + page + ' of ' + totalPages + ' (' + totalRows + ' entries)';
+    }
+
+    function buildControls() {
+        var container = document.getElementById('log-pagination');
+        if (!container) return;
+        container.innerHTML = '';
+
+        var prev = document.createElement('button');
+        prev.className = 'page-btn';
+        prev.textContent = '‹';
+        prev.disabled = (currentPage === 1);
+        prev.onclick = function() { if (currentPage > 1) renderPage(currentPage - 1); };
+        container.appendChild(prev);
+
+        var start = Math.max(1, currentPage - 2);
+        var end   = Math.min(totalPages, currentPage + 2);
+
+        if (start > 1) {
+            var b1 = document.createElement('button');
+            b1.className = 'page-btn'; b1.textContent = '1';
+            b1.onclick = function() { renderPage(1); };
+            container.appendChild(b1);
+            if (start > 2) {
+                var d1 = document.createElement('span');
+                d1.textContent = '…'; d1.style.color = 'rgba(255,255,255,0.4)'; d1.style.padding = '0 2px';
+                container.appendChild(d1);
+            }
+        }
+        for (var p = start; p <= end; p++) {
+            (function(pg) {
+                var b = document.createElement('button');
+                b.className = 'page-btn' + (pg === currentPage ? ' active' : '');
+                b.textContent = pg;
+                b.onclick = function() { renderPage(pg); };
+                container.appendChild(b);
+            })(p);
+        }
+        if (end < totalPages) {
+            if (end < totalPages - 1) {
+                var d2 = document.createElement('span');
+                d2.textContent = '…'; d2.style.color = 'rgba(255,255,255,0.4)'; d2.style.padding = '0 2px';
+                container.appendChild(d2);
+            }
+            var bLast = document.createElement('button');
+            bLast.className = 'page-btn'; bLast.textContent = totalPages;
+            bLast.onclick = function() { renderPage(totalPages); };
+            container.appendChild(bLast);
+        }
+
+        var next = document.createElement('button');
+        next.className = 'page-btn';
+        next.textContent = '›';
+        next.disabled = (currentPage === totalPages);
+        next.onclick = function() { if (currentPage < totalPages) renderPage(currentPage + 1); };
+        container.appendChild(next);
+    }
+
+    renderPage(1);
+})();
+
+function openEditDerbyModal(username, role) {
+    document.getElementById('edit-derby-username-hidden').value = username;
+    document.getElementById('edit-derby-username-display').textContent = username;
+    var sel = document.getElementById('edit-derby-role');
+    if (sel) sel.value = role;
+    document.getElementById('edit-derby-user-modal').style.display = 'flex';
+}
 </script>
+
+<!-- Add Derby User Modal -->
+<div id="add-derby-user-modal" class="modal-overlay" style="display:none;"
+     onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal-box" style="max-width:380px;">
+        <h3 style="margin-bottom:16px;">Add User</h3>
+        <form method="post" action="<%= cp %>/DerbyUser">
+            <input type="hidden" name="action" value="add">
+            <div class="form-group">
+                <label>Email / Username</label>
+                <input type="email" name="newUsername" required
+                       style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+            </div>
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="newFirstName" required
+                       style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" name="newLastName" required
+                       style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="newPassword" required minlength="8"
+                       style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select name="newRole" required
+                        style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+                    <option value="Admin">Admin</option>
+                    <option value="Guest" selected>Guest</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+                <button type="button" class="action-btn"
+                        onclick="document.getElementById('add-derby-user-modal').style.display='none'">
+                    Cancel
+                </button>
+                <button type="submit" class="action-btn" style="background:rgba(46,204,113,0.3);">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Derby User Modal -->
+<div id="edit-derby-user-modal" class="modal-overlay" style="display:none;"
+     onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal-box" style="max-width:380px;">
+        <h3 style="margin-bottom:4px;">Edit User</h3>
+        <p id="edit-derby-username-display"
+           style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:16px;"></p>
+        <form method="post" action="<%= cp %>/DerbyUser">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="editUsername" id="edit-derby-username-hidden">
+            <div class="form-group">
+                <label>New Password <span style="font-size:11px;opacity:0.6;">(leave blank to keep current)</span></label>
+                <input type="password" name="editPassword" minlength="8"
+                       style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select name="editRole" id="edit-derby-role"
+                        style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+                    <option value="Admin">Admin</option>
+                    <option value="Guest">Guest</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+                <button type="button" class="action-btn"
+                        onclick="document.getElementById('edit-derby-user-modal').style.display='none'">
+                    Cancel
+                </button>
+                <button type="submit" class="action-btn" style="background:rgba(52,152,219,0.35);">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 </body>
 </html>

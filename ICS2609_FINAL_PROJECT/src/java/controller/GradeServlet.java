@@ -83,8 +83,9 @@ public class GradeServlet extends HttpServlet {
                 grade.setScore(score);
                 grade.setFeedback(request.getParameter("feedback"));
                 dao.addGrade(grade);
-                auth.getLogDAO().log(username, "GRADE_ADDED: submission " + submissionId
-                        + " score=" + grade.getScore(), ip, role, "GradeServlet");
+                String assignTitle = request.getParameter("assignTitle");
+                if (assignTitle == null || assignTitle.trim().isEmpty()) assignTitle = submissionId;
+                auth.getLogDAO().log(username, "GRADE_ADDED(" + assignTitle + ")", ip, role, "GradeServlet");
                 redirect += "&flash=Grade+saved&flashType=success";
 
             } else if ("update".equals(action)) {
@@ -94,8 +95,7 @@ public class GradeServlet extends HttpServlet {
                 grade.setScore(Double.parseDouble(request.getParameter("score")));
                 grade.setFeedback(request.getParameter("feedback"));
                 dao.updateGrade(grade);
-                auth.getLogDAO().log(username, "GRADE_UPDATED: grade " + gradeId
-                        + " score=" + grade.getScore(), ip, role, "GradeServlet");
+                auth.getLogDAO().log(username, "GRADE_UPDATED", ip, role, "GradeServlet");
                 redirect += "&flash=Grade+updated&flashType=success";
             }
 

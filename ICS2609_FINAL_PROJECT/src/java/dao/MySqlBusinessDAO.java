@@ -443,6 +443,24 @@ public class MySqlBusinessDAO extends BaseDAO {
         return getUsersByRole("student");
     }
 
+    public void addUser(String email, String firstName, String lastName, String role) throws SQLException {
+        String sql = "INSERT INTO users (email, first_name, last_name, role) VALUES (?, ?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, firstName);
+            ps.setString(3, lastName);
+            ps.setString(4, role);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "addUser failed for email " + email, e);
+            throw e;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "addUser unexpected error for email " + email, e);
+            throw new SQLException("addUser failed", e);
+        }
+    }
+
     private List<User> getUsersByRole(String targetRole) {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM users WHERE role = ?";
@@ -848,7 +866,8 @@ public class MySqlBusinessDAO extends BaseDAO {
     }
 
 
-
+    
+    //mga helpers
     private Course mapCourse(ResultSet rs) throws SQLException {
         Course c = new Course();
         c.setC_id(rs.getString("c_id"));

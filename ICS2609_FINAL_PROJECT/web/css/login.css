@@ -120,9 +120,10 @@ form{
 }
 /* --------------------------------------------for inputs */
 .input-group{
+    position:relative;
     display:flex;
     align-items:center;
-    gap:18px;
+    justify-content:center;
 }
 .input-group input{
     width:300px;
@@ -143,6 +144,8 @@ form{
 }
 /* --------------------------------------------buttons designs */
 .icon-btn{
+    position:absolute;
+    right:6px;
     width:46px;
     height:46px;
     border-radius:50%;
@@ -154,6 +157,9 @@ form{
     justify-content:center;
     align-items:center;
     padding:0;
+}
+#password{
+    padding-right:52px;
 }
 .icon-btn img{
     width:22px;

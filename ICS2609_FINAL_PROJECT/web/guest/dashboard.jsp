@@ -292,6 +292,13 @@
                         <% if (g != null) { %>
                             <span class="assignment-score"><%= String.format("%.0f", g.getScore()) %>/<%= String.format("%.0f", a.getMax_score()) %></span>
                         <% } %>
+                        <% if (sub == null) { %>
+                        <button type="button" class="action-btn"
+                                onclick="openSubmitModal('<%= a.getA_id() %>','<%= SecurityUtil.sanitizeHtml(a.getTitle()).replace("'","\\'") %>')"
+                                style="font-size:12px;padding:4px 12px;margin-left:auto;">
+                            Submit
+                        </button>
+                        <% } %>
                     </div>
                     <% } } %>
                 </div>
@@ -507,6 +514,39 @@
         url.searchParams.delete('flashType');
         window.history.replaceState({}, '', url.toString());
     })();
+
+    function openSubmitModal(assignmentId, title) {
+        document.getElementById('submit-assignment-id').value = assignmentId;
+        document.getElementById('submit-modal-title').textContent = title;
+        document.getElementById('submit-modal-overlay').style.display = 'flex';
+    }
+    function closeSubmitModal() {
+        document.getElementById('submit-modal-overlay').style.display = 'none';
+    }
 </script>
+
+<!-- Submit Assignment Modal -->
+<div id="submit-modal-overlay" class="modal-overlay" style="display:none;"
+     onclick="if(event.target===this)closeSubmitModal()">
+    <div class="modal-box" style="max-width:420px;">
+        <h3 style="margin-bottom:8px;">Submit Assignment</h3>
+        <p id="submit-modal-title" style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:16px;"></p>
+        <form method="post" action="<%= request.getContextPath() %>/GuestDashboard">
+            <input type="hidden" name="action" value="submit">
+            <input type="hidden" name="assignmentId" id="submit-assignment-id">
+            <div class="form-group">
+                <label>Submission Link / Notes <span style="font-size:11px;opacity:0.6;">(optional)</span></label>
+                <input type="text" name="fileUrl" maxlength="500"
+                       placeholder="https://... or leave blank"
+                       style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+                <button type="button" class="action-btn" onclick="closeSubmitModal()">Cancel</button>
+                <button type="submit" class="action-btn" style="background:rgba(46,204,113,0.3);">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>

@@ -203,89 +203,15 @@ public class ReportServlet extends HttpServlet {
                     Timestamp tsStart = new Timestamp(parsedStart.getTime());
                     Timestamp tsEnd   = new Timestamp(parsedEnd.getTime() + 86400000L - 1L);
 
-                    // Route by MySQL role: "admin" → activity logs, "teacher" → submissions
-                    User currentUser = dao.getUserByEmail(loggedInUser);
-                    String mysqlRole = (currentUser != null) ? currentUser.getAppRole() : "teacher";
+                    // Always query the PostgreSQL activity log server
+                    List<ActivityLog> logs = auth.getLogDAO().getLogs(tsStart, tsEnd);
 
-                    if ("admin".equalsIgnoreCase(mysqlRole)) {
-                        // Admin (non-teacher): activity logs from PostgreSQL
-                        List<ActivityLog> logs = auth.getLogDAO().getLogs(tsStart, tsEnd);
-
-                        response.setContentType("application/pdf");
-                        response.setHeader("Content-Disposition",
-                                "attachment; filename=AUDIT_LOGS_" + timestampStr + ".pdf");
-                        builder.generateLogReport(response.getOutputStream(), logs, loggedInUser,
-                                pdfHeader, pdfFooter,
-                                "Activity Audit Log (" + startStr + " to " + endStr + ")");
-                    } else {
-                        // Teacher: submissions across their courses in the date range
-                        User teacher = currentUser;
-                        if (teacher == null) {
-                            response.sendRedirect(request.getContextPath() + "/errors/error_500.jsp");
-                            return;
-                        }
-
-                        List<Course>  courses    = dao.getCoursesByTeacher(teacher.getU_id());
-                        Map<String, User>       studentMap    = new LinkedHashMap<String, User>();
-                        Map<String, Assignment> assignmentMap = new LinkedHashMap<String, Assignment>();
-                        Map<String, String>     courseTitle   = new LinkedHashMap<String, String>();
-
-                        for (User s : dao.getAllStudents()) studentMap.put(s.getU_id(), s);
-                        for (Course c : courses)           courseTitle.put(c.getC_id(), c.getTitle());
-
-                        List<String[]> rows = new ArrayList<String[]>();
-                        for (Course course : courses) {
-                            List<Submission> subs = dao.getAllSubmissionsByCourse(course.getC_id());
-                            for (Submission sub : subs) {
-                                String submittedAt = sub.getSubmitted_at();
-                                if (submittedAt == null) continue;
-                                // String prefix comparison works for yyyy-MM-dd HH:mm:ss format
-                                String datePrefix = submittedAt.length() >= 10
-                                        ? submittedAt.substring(0, 10) : submittedAt;
-                                if (datePrefix.compareTo(startStr) < 0
-                                        || datePrefix.compareTo(endStr) > 0) continue;
-
-                                User student = studentMap.get(sub.getStudent_id());
-                                String studentEmail = (student != null) ? student.getEmail() : sub.getStudent_id();
-
-                                Assignment a = assignmentMap.get(sub.getAssignment_id());
-                                if (a == null) {
-                                    a = dao.getAssignmentById(sub.getAssignment_id());
-                                    if (a != null) assignmentMap.put(sub.getAssignment_id(), a);
-                                }
-                                String assignTitle = (a != null) ? a.getTitle() : sub.getAssignment_id();
-
-                                String score = "-";
-                                if ("graded".equalsIgnoreCase(sub.getStatus())) {
-                                    Grade g = dao.getGradeBySubmission(sub.getS_id());
-                                    if (g != null) score = String.valueOf(g.getScore());
-                                }
-
-                                rows.add(new String[]{
-                                    submittedAt,
-                                    course.getTitle(),
-                                    studentEmail,
-                                    assignTitle,
-                                    sub.getStatus(),
-                                    score
-                                });
-                            }
-                        }
-
-                        // sort rows chronologically by submitted_at (column 0)
-                        java.util.Collections.sort(rows, new java.util.Comparator<String[]>() {
-                            public int compare(String[] a, String[] b) {
-                                return a[0].compareTo(b[0]);
-                            }
-                        });
-
-                        response.setContentType("application/pdf");
-                        response.setHeader("Content-Disposition",
-                                "attachment; filename=COURSE_ACTIVITY_" + timestampStr + ".pdf");
-                        builder.generateSubmissionReport(response.getOutputStream(), rows, loggedInUser,
-                                pdfHeader, pdfFooter,
-                                "Course Submission Activity (" + startStr + " to " + endStr + ")");
-                    }
+                    response.setContentType("application/pdf");
+                    response.setHeader("Content-Disposition",
+                            "attachment; filename=LOG_REPORT_" + timestampStr + ".pdf");
+                    builder.generateLogReport(response.getOutputStream(), logs, loggedInUser,
+                            pdfHeader, pdfFooter,
+                            "Activity Log Report (" + startStr + " to " + endStr + ")");
                     break;
                 }
 

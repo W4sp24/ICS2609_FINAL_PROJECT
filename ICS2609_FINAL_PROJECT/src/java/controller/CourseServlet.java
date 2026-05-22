@@ -63,7 +63,7 @@ public class CourseServlet extends HttpServlet {
                 c.setTitle(request.getParameter("title"));
                 c.setDescription(request.getParameter("description"));
                 dao.addCourse(c);
-                auth.getLogDAO().log(username, "COURSE_ADDED: " + c.getTitle(), ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "COURSE_ADDED(" + c.getTitle() + ")", ip, role, "CourseServlet");
                 response.sendRedirect(request.getContextPath()
                         + "/AdminDashboard?section=courseManagement&flash=Course+added&flashType=success");
                 return;
@@ -75,20 +75,24 @@ public class CourseServlet extends HttpServlet {
                 c.setDescription(request.getParameter("description"));
                 c.setStatus(request.getParameter("status"));
                 dao.updateCourse(c);
-                auth.getLogDAO().log(username, "COURSE_UPDATED: " + courseId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "COURSE_UPDATED(" + c.getTitle() + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Course+updated&flashType=success";
 
             } else if ("delete".equals(action)) {
+                Course delCourse = dao.getCourseById(courseId);
+                String delName = (delCourse != null) ? delCourse.getTitle() : courseId;
                 dao.deleteCourse(courseId);
-                auth.getLogDAO().log(username, "COURSE_DELETED: " + courseId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "COURSE_DELETED(" + delName + ")", ip, role, "CourseServlet");
                 response.sendRedirect(request.getContextPath()
                         + "/AdminDashboard?section=courseManagement&flash=Course+deleted&flashType=info");
                 return;
 
             } else if ("status".equals(action)) {
                 String newStatus = request.getParameter("status");
+                Course stCourse = dao.getCourseById(courseId);
+                String stName = (stCourse != null) ? stCourse.getTitle() : courseId;
                 dao.updateCourseStatus(courseId, newStatus);
-                auth.getLogDAO().log(username, "COURSE_STATUS_CHANGED: " + courseId + " -> " + newStatus, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "COURSE_STATUS_CHANGED(" + stName + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Status+changed+to+" + newStatus + "&flashType=info";
 
             } else if ("addModule".equals(action)) {
@@ -98,7 +102,7 @@ public class CourseServlet extends HttpServlet {
                 m.setDescription(request.getParameter("description"));
                 m.setOrder(parseIntSafe(request.getParameter("order"), 0));
                 dao.addModule(m);
-                auth.getLogDAO().log(username, "MODULE_ADDED: " + m.getTitle() + " in course " + courseId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "MODULE_ADDED(" + m.getTitle() + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Module+added&flashType=success";
 
             } else if ("editModule".equals(action)) {
@@ -109,13 +113,15 @@ public class CourseServlet extends HttpServlet {
                 m.setDescription(request.getParameter("description"));
                 m.setOrder(parseIntSafe(request.getParameter("order"), 0));
                 dao.updateModule(m);
-                auth.getLogDAO().log(username, "MODULE_UPDATED: " + moduleId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "MODULE_UPDATED(" + m.getTitle() + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Module+updated&flashType=success";
 
             } else if ("deleteModule".equals(action)) {
                 String moduleId = request.getParameter("moduleId");
+                Module delMod = dao.getModuleById(moduleId);
+                String delModName = (delMod != null) ? delMod.getTitle() : moduleId;
                 dao.deleteModule(moduleId);
-                auth.getLogDAO().log(username, "MODULE_DELETED: " + moduleId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "MODULE_DELETED(" + delModName + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Module+deleted&flashType=info";
 
             } else if ("addAssignment".equals(action)) {
@@ -126,7 +132,7 @@ public class CourseServlet extends HttpServlet {
                 a.setDue_date(emptyToNull(request.getParameter("dueDate")));
                 a.setMax_score(parseDoubleSafe(request.getParameter("maxScore"), 0));
                 dao.addAssignment(a);
-                auth.getLogDAO().log(username, "ASSIGNMENT_ADDED: " + a.getTitle() + " in course " + courseId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "ASSIGNMENT_ADDED(" + a.getTitle() + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Assignment+added&flashType=success";
 
             } else if ("editAssignment".equals(action)) {
@@ -138,32 +144,38 @@ public class CourseServlet extends HttpServlet {
                 a.setDue_date(emptyToNull(request.getParameter("dueDate")));
                 a.setMax_score(parseDoubleSafe(request.getParameter("maxScore"), 0));
                 dao.updateAssignment(a);
-                auth.getLogDAO().log(username, "ASSIGNMENT_UPDATED: " + assignmentId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "ASSIGNMENT_UPDATED(" + a.getTitle() + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Assignment+updated&flashType=success";
 
             } else if ("deleteAssignment".equals(action)) {
                 String assignmentId = request.getParameter("assignmentId");
+                Assignment delAsgn = dao.getAssignmentById(assignmentId);
+                String delAsgnName = (delAsgn != null) ? delAsgn.getTitle() : assignmentId;
                 dao.deleteAssignment(assignmentId);
-                auth.getLogDAO().log(username, "ASSIGNMENT_DELETED: " + assignmentId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "ASSIGNMENT_DELETED(" + delAsgnName + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Assignment+deleted&flashType=info";
 
             } else if ("enrollStudent".equals(action)) {
-                String studentId = request.getParameter("studentId");
+                String studentId    = request.getParameter("studentId");
+                String studentEmail = request.getParameter("studentEmail");
+                if (studentEmail == null || studentEmail.trim().isEmpty()) studentEmail = studentId;
                 Enrollment existing = dao.getEnrollment(courseId, studentId);
                 if (existing != null && "dropped".equalsIgnoreCase(existing.getStatus())) {
                     dao.reEnrollStudent(courseId, studentId);
-                    auth.getLogDAO().log(username, "STUDENT_REENROLLED: " + studentId + " in course " + courseId, ip, role, "CourseServlet");
+                    auth.getLogDAO().log(username, "STUDENT_REENROLLED(" + studentEmail + ")", ip, role, "CourseServlet");
                     redirectCourseId += "&flash=Student+re-enrolled&flashType=success";
                 } else if (existing == null) {
                     dao.enrollStudent(courseId, studentId);
-                    auth.getLogDAO().log(username, "STUDENT_ENROLLED: " + studentId + " in course " + courseId, ip, role, "CourseServlet");
+                    auth.getLogDAO().log(username, "STUDENT_ENROLLED(" + studentEmail + ")", ip, role, "CourseServlet");
                     redirectCourseId += "&flash=Student+enrolled&flashType=success";
                 }
 
             } else if ("dropStudent".equals(action)) {
-                String studentId = request.getParameter("studentId");
+                String studentId    = request.getParameter("studentId");
+                String studentEmail = request.getParameter("studentEmail");
+                if (studentEmail == null || studentEmail.trim().isEmpty()) studentEmail = studentId;
                 dao.dropEnrollment(courseId, studentId);
-                auth.getLogDAO().log(username, "STUDENT_DROPPED: " + studentId + " from course " + courseId, ip, role, "CourseServlet");
+                auth.getLogDAO().log(username, "STUDENT_DROPPED(" + studentEmail + ")", ip, role, "CourseServlet");
                 redirectCourseId += "&flash=Student+dropped&flashType=info";
             }
 

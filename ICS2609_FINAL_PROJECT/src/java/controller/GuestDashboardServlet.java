@@ -121,6 +121,56 @@ public class GuestDashboardServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || !SessionUtil.isAuthenticated(request) || SessionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        if ("submit".equals(action)) {
+            dao.MySqlBusinessDAO mysqlDao = (dao.MySqlBusinessDAO) getServletContext()
+                    .getAttribute(listeners.AppContextListener.MYSQL_DAO_KEY);
+            business.AuthService auth = (business.AuthService) getServletContext()
+                    .getAttribute(listeners.AppContextListener.AUTH_SERVICE_KEY);
+
+            String username    = SessionUtil.getUsername(request);
+            model.User student = mysqlDao.getUserByEmail(username);
+            String assignmentId = request.getParameter("assignmentId");
+            String fileUrl      = request.getParameter("fileUrl");
+            if (fileUrl == null) fileUrl = "";
+
+            if (util.SecurityUtil.isBlank(assignmentId) || student == null) {
+                response.sendRedirect(request.getContextPath()
+                        + "/GuestDashboard?flash=Submission+failed&flashType=error");
+                return;
+            }
+
+            model.Submission sub = new model.Submission();
+            sub.setAssignment_id(assignmentId);
+            sub.setStudent_id(student.getU_id());
+            sub.setFile_url(fileUrl.trim());
+
+            try {
+                boolean ok = mysqlDao.submitAssignment(sub);
+                if (ok) {
+                    auth.getLogDAO().log(username, "ASSIGNMENT_SUBMITTED", request.getRemoteAddr(),
+                            SessionUtil.getRole(request), "GuestDashboard");
+                    response.sendRedirect(request.getContextPath()
+                            + "/GuestDashboard?flash=Assignment+submitted+successfully&flashType=success");
+                } else {
+                    response.sendRedirect(request.getContextPath()
+                            + "/GuestDashboard?flash=Submission+failed+(already+submitted?)&flashType=error");
+                }
+            } catch (java.sql.SQLException e) {
+                java.util.logging.Logger.getLogger(GuestDashboardServlet.class.getName())
+                        .log(java.util.logging.Level.SEVERE, "submitAssignment failed", e);
+                response.sendRedirect(request.getContextPath()
+                        + "/GuestDashboard?flash=Submission+error&flashType=error");
+            }
+            return;
+        }
         doGet(request, response);
     }
 }
