@@ -96,7 +96,7 @@ body {
     flex-direction:column;
     align-items:center;
     width:100%;
-    transform:scale(0.68);
+    transform:scale(0.78);
     transform-origin:top center;
     z-index:3;
 }
@@ -120,9 +120,10 @@ form{
 }
 /* --------------------------------------------for inputs */
 .input-group{
+    position:relative;
     display:flex;
     align-items:center;
-    gap:18px;
+    justify-content:center;
 }
 .input-group input{
     width:300px;
@@ -141,30 +142,32 @@ form{
     color:#2f5f79;
     opacity:1;
 }
-/* --------------------------------------------buttons designs */
-.icon-btn{
-    width:46px;
-    height:46px;
-    border-radius:50%;
-    border:3px solid rgba(255,255,255,0.7);
-    background:transparent;
-    cursor:pointer;
-    transition:0.2s ease;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:0;
+/* -------------------------------------------- reCAPTCHA + submit */
+.recaptcha-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
 }
-.icon-btn img{
-    width:22px;
-    height:22px;
-    object-fit:contain;
-    image-rendering:pixelated;
+.login-submit-btn {
+    align-self: center;
+    width: 200px;
+    height: 52px;
+    border: none;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.92);
+    color: #2f5f79;
+    font-size: 22px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    font-family: 'Daruma', sans-serif;
+    transition: 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-.icon-btn:hover{
-    transform:scale(1.08);
-    background:rgba(255,255,255,0.08);
+.login-submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
+
 /* -------------------------------------------organize later */
 
 @media screen and (max-width:900px){

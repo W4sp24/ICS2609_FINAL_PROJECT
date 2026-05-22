@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="util.SecurityUtil" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,9 +30,12 @@
     <div class="card">
         <div class="icon">🚫</div>
         <h2>Access Denied</h2>
-        <% String authError = (session != null) ? (String) session.getAttribute("authError") : null; %>
+        <%
+            String authError = (session != null) ? (String) session.getAttribute("authError") : null;
+            if (session != null && authError != null) session.removeAttribute("authError");
+        %>
         <% if (authError != null) { %>
-            <div class="error-msg"><%= authError %></div>
+            <div class="error-msg"><%= SecurityUtil.sanitizeHtml(authError) %></div>
         <% } else { %>
             <p>You do not have permission to access this page.</p>
         <% } %>

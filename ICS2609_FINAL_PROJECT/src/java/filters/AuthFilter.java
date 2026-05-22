@@ -45,7 +45,8 @@ public class AuthFilter implements Filter {
         if (session == null) {
             LOGGER.info("No session for request: " + requestUri + " | IP: " + ipAddress);
             if (authService != null) authService.logSessionExpired(ipAddress, requestUri);
-            response.sendRedirect(request.getContextPath() + "/errors/session_expired.jsp");
+            if (!response.isCommitted())
+                response.sendRedirect(request.getContextPath() + "/errors/session_expired.jsp");
             return;
         }
 
@@ -53,7 +54,8 @@ public class AuthFilter implements Filter {
             LOGGER.warning("Unauthenticated access attempt: " + requestUri + " | IP: " + ipAddress);
             if (authService != null)
                 authService.logUnauthorizedAccess("UNKNOWN", "UNKNOWN", ipAddress, requestUri);
-            response.sendRedirect(request.getContextPath() + "/errors/unauthorized.jsp");
+            if (!response.isCommitted())
+                response.sendRedirect(request.getContextPath() + "/errors/unauthorized.jsp");
             return;
         }
 
@@ -71,7 +73,8 @@ public class AuthFilter implements Filter {
                     request.getServletContext().getAttribute(AppContextListener.ACTIVE_SESSIONS_KEY);
                 if (activeSessions != null && timedOutUser != null) activeSessions.remove(timedOutUser);
                 SessionUtil.invalidateSession(request);
-                response.sendRedirect(request.getContextPath() + "/errors/session_expired.jsp");
+                if (!response.isCommitted())
+                    response.sendRedirect(request.getContextPath() + "/errors/session_expired.jsp");
                 return;
             }
         }

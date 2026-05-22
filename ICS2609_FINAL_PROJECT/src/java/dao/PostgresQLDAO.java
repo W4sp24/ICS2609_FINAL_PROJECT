@@ -3,10 +3,13 @@ package dao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import model.ActivityLog;
 
 public class PostgresQLDAO extends BaseDAO {
+    private static final Logger LOGGER = Logger.getLogger(PostgresQLDAO.class.getName());
     private final String driver, url, user, pass;
 
     public PostgresQLDAO(ServletContext context) {
@@ -33,7 +36,7 @@ public class PostgresQLDAO extends BaseDAO {
             ps.setString(5, source);
             ps.executeUpdate();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Activity log insert failed for user " + username + " action " + action, e);
         }
     }
 
@@ -53,7 +56,7 @@ public class PostgresQLDAO extends BaseDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "getLogs(limit) failed", e);
         }
         return logs;
     }
@@ -71,7 +74,7 @@ public class PostgresQLDAO extends BaseDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "getLogs(range) failed", e);
         }
         return logs;
     }
@@ -89,7 +92,7 @@ public class PostgresQLDAO extends BaseDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "getLogsByUser failed for user " + username, e);
         }
         return logs;
     }

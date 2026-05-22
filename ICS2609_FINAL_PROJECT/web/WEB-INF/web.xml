@@ -164,6 +164,14 @@
         <filter-name>AuthFilter</filter-name>
         <url-pattern>/ReportServlet</url-pattern>
     </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/DerbyUser</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>RoleFilter</filter-name>
+        <url-pattern>/DerbyUser</url-pattern>
+    </filter-mapping>
     <!-- RoleFilter: checks Admin role for admin-only resources (runs AFTER AuthFilter) -->
     <filter>
         <filter-name>RoleFilter</filter-name>

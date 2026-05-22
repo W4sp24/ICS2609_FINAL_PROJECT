@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="model.*,java.util.*"%>
+<%@page import="model.*,java.util.*,util.SecurityUtil"%>
 <%
     List<Course>                 enrolledCourses      = (List<Course>)                 request.getAttribute("enrolledCourses");
     Map<String,List<Module>>     courseModules        = (Map<String,List<Module>>)     request.getAttribute("courseModules");
@@ -31,6 +31,9 @@
     <link rel="stylesheet" href="<%= cp %>/css/studentDashboard.css">
 </head>
 <body>
+
+<!-- Flash toast notification -->
+<div id="flash-toast"></div>
 
 <!-- Parallax background -->
 <div id="background">
@@ -126,8 +129,8 @@
                     <div class="course-card-full">
                         <div class="course-accent"></div>
                         <div class="course-card-body">
-                            <h4><%= c.getTitle() %></h4>
-                            <p class="course-card-desc"><%= c.getDescription() != null ? c.getDescription() : "" %></p>
+                            <h4><%= SecurityUtil.sanitizeHtml(c.getTitle()) %></h4>
+                            <p class="course-card-desc"><%= SecurityUtil.sanitizeHtml(c.getDescription() != null ? c.getDescription() : "") %></p>
                             <div class="progress-bar"><div class="progress-fill" style="width:<%= pct %>%"></div></div>
                             <div class="progress-label"><%= stats[1] %> / <%= stats[0] %> submitted</div>
                             <div class="course-card-footer">
@@ -162,7 +165,7 @@
                 <div class="todo-item">
                     <span style="font-size:20px">&#128203;</span>
                     <div class="todo-text">
-                        <strong><%= a.getTitle() %></strong>
+                        <strong><%= SecurityUtil.sanitizeHtml(a.getTitle()) %></strong>
                         <div class="todo-course-tag"><%= courseTitle %></div>
                     </div>
                     <% if (a.getDue_date() != null && !a.getDue_date().isEmpty()) { %>
@@ -190,8 +193,8 @@
             <div class="course-card-full">
                 <div class="course-accent"></div>
                 <div class="course-card-body">
-                    <h4><%= c.getTitle() %></h4>
-                    <p class="course-card-desc"><%= c.getDescription() != null ? c.getDescription() : "" %></p>
+                    <h4><%= SecurityUtil.sanitizeHtml(c.getTitle()) %></h4>
+                    <p class="course-card-desc"><%= SecurityUtil.sanitizeHtml(c.getDescription() != null ? c.getDescription() : "") %></p>
                     <div class="progress-bar"><div class="progress-fill" style="width:<%= pct %>%"></div></div>
                     <div class="progress-label"><%= stats[1] %> / <%= stats[0] %> submitted &nbsp;&bull;&nbsp; <%= stats[2] %> graded</div>
                     <div class="course-card-footer">
@@ -216,11 +219,11 @@
         <button class="course-detail-back" onclick="showSection('courses')">&#8592; My Courses</button>
 
         <div class="course-detail-header">
-            <div class="section-title"><%= c.getTitle() %></div>
+            <div class="section-title"><%= SecurityUtil.sanitizeHtml(c.getTitle()) %></div>
             <span class="badge badge-<%= c.getStatus() %>"><%= c.getStatus() %></span>
         </div>
         <% if (c.getDescription() != null && !c.getDescription().isEmpty()) { %>
-            <p class="course-detail-desc"><%= c.getDescription() %></p>
+            <p class="course-detail-desc"><%= SecurityUtil.sanitizeHtml(c.getDescription()) %></p>
         <% } %>
 
         <div class="tab-bar">
@@ -280,7 +283,7 @@
                     <div class="assignment-row">
                         <span style="font-size:18px">&#128203;</span>
                         <div class="assignment-info">
-                            <strong><%= a.getTitle() %></strong>
+                            <strong><%= SecurityUtil.sanitizeHtml(a.getTitle()) %></strong>
                             <% if (a.getDue_date() != null && !a.getDue_date().isEmpty()) { %>
                                 <div class="assignment-due">Due: <%= a.getDue_date() %></div>
                             <% } %>
@@ -288,6 +291,13 @@
                         <span class="badge <%= badgeCls %>"><%= statusLabel %></span>
                         <% if (g != null) { %>
                             <span class="assignment-score"><%= String.format("%.0f", g.getScore()) %>/<%= String.format("%.0f", a.getMax_score()) %></span>
+                        <% } %>
+                        <% if (sub == null) { %>
+                        <button type="button" class="action-btn"
+                                onclick="openSubmitModal('<%= a.getA_id() %>','<%= SecurityUtil.sanitizeHtml(a.getTitle()).replace("'","\\'") %>')"
+                                style="font-size:12px;padding:4px 12px;margin-left:auto;">
+                            Submit
+                        </button>
                         <% } %>
                     </div>
                     <% } } %>
@@ -340,12 +350,12 @@
                                }
                     %>
                     <tr>
-                        <td><%= a.getTitle() %></td>
+                        <td><%= SecurityUtil.sanitizeHtml(a.getTitle()) %></td>
                         <td><span class="badge <%= badgeCls %>"><%= statusLabel %></span></td>
                         <td><%= (g != null) ? String.format("%.1f", g.getScore()) : "&#8212;" %></td>
                         <td><%= (a.getMax_score() > 0) ? String.format("%.0f", a.getMax_score()) : "&#8212;" %></td>
                         <td><% if (g != null && a.getMax_score() > 0) { %><span class="<%= pctCls %>"><%= String.format("%.1f%%", pctVal) %></span><% } else { %>&#8212;<% } %></td>
-                        <td style="color:rgba(255,255,255,0.7)"><%= (g != null && g.getFeedback() != null && !g.getFeedback().isEmpty()) ? g.getFeedback() : "&#8212;" %></td>
+                        <td style="color:rgba(255,255,255,0.7)"><%= (g != null && g.getFeedback() != null && !g.getFeedback().isEmpty()) ? SecurityUtil.sanitizeHtml(g.getFeedback()) : "&#8212;" %></td>
                     </tr>
                     <% } } %>
                     </tbody>
@@ -401,7 +411,7 @@
                     if (!courseHasAsgn) continue;
                     anyGrade = true;
             %>
-                <div class="course-group-header"><%= c.getTitle() %></div>
+                <div class="course-group-header"><%= SecurityUtil.sanitizeHtml(c.getTitle()) %></div>
                 <table class="grade-table">
                     <thead>
                         <tr>
@@ -428,12 +438,12 @@
                                }
                     %>
                     <tr>
-                        <td><%= a.getTitle() %></td>
+                        <td><%= SecurityUtil.sanitizeHtml(a.getTitle()) %></td>
                         <td><span class="badge <%= badgeCls %>"><%= statusLabel %></span></td>
                         <td><%= (g != null) ? String.format("%.1f", g.getScore()) : "&#8212;" %></td>
                         <td><%= (a.getMax_score() > 0) ? String.format("%.0f", a.getMax_score()) : "&#8212;" %></td>
                         <td><% if (g != null && a.getMax_score() > 0) { %><span class="<%= pctCls %>"><%= String.format("%.1f%%", pctVal) %></span><% } else { %>&#8212;<% } %></td>
-                        <td style="color:rgba(255,255,255,0.7)"><%= (g != null && g.getFeedback() != null && !g.getFeedback().isEmpty()) ? g.getFeedback() : "&#8212;" %></td>
+                        <td style="color:rgba(255,255,255,0.7)"><%= (g != null && g.getFeedback() != null && !g.getFeedback().isEmpty()) ? SecurityUtil.sanitizeHtml(g.getFeedback()) : "&#8212;" %></td>
                     </tr>
                     <% } } %>
                     </tbody>
@@ -486,6 +496,57 @@
             document.getElementById('ctabBtn-' + courseId + '-' + t).classList.toggle('active', t === tab);
         });
     }
+
+    // ── Flash toast ───────────────────────────────────────────────
+    (function() {
+        var params = new URLSearchParams(window.location.search);
+        var msg  = params.get('flash');
+        var type = params.get('flashType') || 'success';
+        if (!msg) return;
+        var toast = document.getElementById('flash-toast');
+        if (!toast) return;
+        toast.className = 'show toast-' + type;
+        toast.innerHTML = '<span>' + msg + '</span>'
+            + '<button class="toast-close" onclick="this.parentElement.classList.remove(\'show\')">&#x2715;</button>';
+        setTimeout(function() { toast.classList.remove('show'); }, 4500);
+        var url = new URL(window.location.href);
+        url.searchParams.delete('flash');
+        url.searchParams.delete('flashType');
+        window.history.replaceState({}, '', url.toString());
+    })();
+
+    function openSubmitModal(assignmentId, title) {
+        document.getElementById('submit-assignment-id').value = assignmentId;
+        document.getElementById('submit-modal-title').textContent = title;
+        document.getElementById('submit-modal-overlay').style.display = 'flex';
+    }
+    function closeSubmitModal() {
+        document.getElementById('submit-modal-overlay').style.display = 'none';
+    }
 </script>
+
+<!-- Submit Assignment Modal -->
+<div id="submit-modal-overlay" class="modal-overlay" style="display:none;"
+     onclick="if(event.target===this)closeSubmitModal()">
+    <div class="modal-box" style="max-width:420px;">
+        <h3 style="margin-bottom:8px;">Submit Assignment</h3>
+        <p id="submit-modal-title" style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:16px;"></p>
+        <form method="post" action="<%= request.getContextPath() %>/GuestDashboard">
+            <input type="hidden" name="action" value="submit">
+            <input type="hidden" name="assignmentId" id="submit-assignment-id">
+            <div class="form-group">
+                <label>Submission Link / Notes <span style="font-size:11px;opacity:0.6;">(optional)</span></label>
+                <input type="text" name="fileUrl" maxlength="500"
+                       placeholder="https://... or leave blank"
+                       style="width:100%;padding:8px 12px;border-radius:8px;border:none;font-size:13px;">
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+                <button type="button" class="action-btn" onclick="closeSubmitModal()">Cancel</button>
+                <button type="submit" class="action-btn" style="background:rgba(46,204,113,0.3);">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
