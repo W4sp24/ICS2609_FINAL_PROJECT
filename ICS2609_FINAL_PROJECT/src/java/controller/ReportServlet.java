@@ -25,6 +25,7 @@ import model.Enrollment;
 import model.Grade;
 import model.Submission;
 import model.User;
+import util.SecurityUtil;
 import util.SessionUtil;
 
 public class ReportServlet extends HttpServlet {
@@ -47,6 +48,9 @@ public class ReportServlet extends HttpServlet {
 
         MySqlBusinessDAO dao  = (MySqlBusinessDAO) context.getAttribute(AppContextListener.MYSQL_DAO_KEY);
         AuthService      auth = (AuthService)       context.getAttribute(AppContextListener.AUTH_SERVICE_KEY);
+
+        String ip   = SecurityUtil.getClientIp(request);
+        String role = SessionUtil.getRole(request);
 
         PdfReportBuilder builder      = new PdfReportBuilder();
         String           timestampStr = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -80,6 +84,7 @@ public class ReportServlet extends HttpServlet {
                             "attachment; filename=ALL_RECORDS_" + timestampStr + ".pdf");
                     builder.generateUserReport(response.getOutputStream(), userList, loggedInUser,
                             pdfHeader, pdfFooter, "Platform User Registry — All Records");
+                    auth.getLogDAO().log(loggedInUser, "REPORT_ALL_RECORDS", ip, role, "ReportServlet");
                     break;
                 }
 
@@ -114,6 +119,7 @@ public class ReportServlet extends HttpServlet {
                             "attachment; filename=OWN_RECORD_" + timestampStr + ".pdf");
                     builder.generateOwnRecordReport(response.getOutputStream(), userList, userLogs,
                             loggedInUser, pdfHeader, pdfFooter, "Administrator Account Record");
+                    auth.getLogDAO().log(loggedInUser, "REPORT_OWN_RECORDS", ip, role, "ReportServlet");
                     break;
                 }
 
@@ -161,6 +167,7 @@ public class ReportServlet extends HttpServlet {
                             "attachment; filename=CLASS_LIST_" + timestampStr + ".pdf");
                     builder.generateClassListReport(response.getOutputStream(), rows, loggedInUser,
                             pdfHeader, pdfFooter, "Class Enrollment List by Course");
+                    auth.getLogDAO().log(loggedInUser, "REPORT_CLASS_LIST", ip, role, "ReportServlet");
                     break;
                 }
 
@@ -212,6 +219,7 @@ public class ReportServlet extends HttpServlet {
                     builder.generateLogReport(response.getOutputStream(), logs, loggedInUser,
                             pdfHeader, pdfFooter,
                             "Activity Log Report (" + startStr + " to " + endStr + ")");
+                    auth.getLogDAO().log(loggedInUser, "REPORT_TIME_BOUND", ip, role, "ReportServlet");
                     break;
                 }
 
@@ -277,6 +285,7 @@ public class ReportServlet extends HttpServlet {
                             "attachment; filename=GRADE_REPORT_" + timestampStr + ".pdf");
                     builder.generateGradeReport(response.getOutputStream(), rows, loggedInUser,
                             pdfHeader, pdfFooter, "Student Grade Report");
+                    auth.getLogDAO().log(loggedInUser, "REPORT_GRADES", ip, role, "ReportServlet");
                     break;
                 }
 

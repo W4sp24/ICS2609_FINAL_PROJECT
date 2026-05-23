@@ -123,3 +123,64 @@
 [2026-05-22 22:12:56] [INFO] filters.AuthFilter - AuthFilter destroyed.
 [2026-05-22 22:12:56] [INFO] filters.RoleFilter - RoleFilter destroyed.
 [2026-05-22 22:12:56] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Shutting Down ===
+[2026-05-22 22:15:31] [INFO] util.TraceLogger - Trace log initialised: C:\Users\ethan\Documents\NetBeansProjects\ICS2609_FINAL_PROJECT\ICS2609_FINAL_PROJECT\logs\log_20260522.log
+[2026-05-22 22:15:31] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Starting ===
+[2026-05-22 22:15:31] [INFO] listeners.AppContextListener - reCAPTCHA site key loaded: 6Le2Dpos...
+[2026-05-22 22:15:31] [INFO] listeners.AppContextListener - === Application initialized successfully ===
+[2026-05-22 22:15:31] [INFO] filters.AuthFilter - AuthFilter initialized.
+[2026-05-22 22:15:31] [INFO] filters.RoleFilter - RoleFilter initialized.
+[2026-05-22 22:15:32] [INFO] filters.AuthFilter - AuthFilter destroyed.
+[2026-05-22 22:15:32] [INFO] filters.RoleFilter - RoleFilter destroyed.
+[2026-05-22 22:15:32] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Shutting Down ===
+[2026-05-22 22:15:33] [INFO] util.TraceLogger - Trace log initialised: C:\Users\ethan\Documents\NetBeansProjects\ICS2609_FINAL_PROJECT\ICS2609_FINAL_PROJECT\logs\log_20260522.log
+[2026-05-22 22:15:33] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Starting ===
+[2026-05-22 22:15:33] [INFO] listeners.AppContextListener - reCAPTCHA site key loaded: 6Le2Dpos...
+[2026-05-22 22:15:33] [INFO] listeners.AppContextListener - === Application initialized successfully ===
+[2026-05-22 22:15:33] [INFO] filters.AuthFilter - AuthFilter initialized.
+[2026-05-22 22:15:33] [INFO] filters.RoleFilter - RoleFilter initialized.
+[2026-05-22 22:15:57] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 22:15:58] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:17:14] [INFO] business.AuthService - Logout: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:17:22] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 22:17:22] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:17:38] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 22:17:38] [INFO] business.AuthService - Login SUCCESS: student01@mail.com [Guest] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:32:34] [INFO] business.AuthService - Logout: UNKNOWN [UNKNOWN] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:34:27] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 22:34:27] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:42:05] [INFO] business.AuthService - Logout: UNKNOWN [UNKNOWN] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:42:29] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 22:42:29] [INFO] business.AuthService - Login SUCCESS: student01@mail.com [Guest] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:53:08] [INFO] filters.AuthFilter - Session expired (age 639s) for: student01@mail.com | IP: 0:0:0:0:0:0:0:1
+[2026-05-22 22:53:08] [WARNING] business.AuthService - Session expired — access to [/ICS2609_FINAL_PROJECT/ReportServlet] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:59:31] [INFO] filters.AuthFilter - No session for request: /ICS2609_FINAL_PROJECT/ReportServlet | IP: 0:0:0:0:0:0:0:1
+[2026-05-22 22:59:31] [WARNING] business.AuthService - Session expired — access to [/ICS2609_FINAL_PROJECT/ReportServlet] from 0:0:0:0:0:0:0:1
+[2026-05-22 22:59:47] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 22:59:47] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:00:45] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:00:45] [INFO] business.AuthService - Login SUCCESS: student01@mail.com [Guest] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:17:57] [INFO] business.AuthService - Logout: UNKNOWN [UNKNOWN] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:18:02] [INFO] business.AuthService - Logout: UNKNOWN [UNKNOWN] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:23:23] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:23:23] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:24:44] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:24:44] [INFO] business.AuthService - Login SUCCESS: student01@mail.com [Guest] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:25:35] [INFO] business.AuthService - Logout: student01@mail.com [Guest] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:25:41] [INFO] business.AuthService - Logout: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:27:07] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:27:07] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:27:15] [INFO] business.AuthService - Logout: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:35:58] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:35:58] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:39:47] [INFO] business.AuthService - Logout: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:39:59] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:39:59] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:40:52] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:40:52] [INFO] business.AuthService - Login SUCCESS: student01@mail.com [Guest] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:45:55] [INFO] filters.AuthFilter - Session expired (age 356s) for: prof.turing@school.edu | IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:45:55] [WARNING] business.AuthService - Session expired — access to [/ICS2609_FINAL_PROJECT/ReportServlet] from 0:0:0:0:0:0:0:1
+[2026-05-22 23:46:05] [INFO] business.AuthService - CAPTCHA verified successfully from IP: 0:0:0:0:0:0:0:1
+[2026-05-22 23:46:05] [INFO] business.AuthService - Login SUCCESS: prof.turing@school.edu [Admin] from 0:0:0:0:0:0:0:1
+[2026-05-23 00:03:32] [INFO] filters.AuthFilter - AuthFilter destroyed.
+[2026-05-23 00:03:32] [INFO] filters.RoleFilter - RoleFilter destroyed.
+[2026-05-23 00:03:32] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Shutting Down ===
