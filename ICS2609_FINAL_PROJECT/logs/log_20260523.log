@@ -1,0 +1,18 @@
+[2026-05-23 09:45:39] [INFO] util.TraceLogger - Trace log initialised: C:\Users\ethan\Documents\NetBeansProjects\ICS2609_FINAL_PROJECT\ICS2609_FINAL_PROJECT\logs\log_20260523.log
+[2026-05-23 09:45:39] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Starting ===
+[2026-05-23 09:45:39] [INFO] listeners.AppContextListener - reCAPTCHA site key loaded: 6Le2Dpos...
+[2026-05-23 09:45:39] [INFO] listeners.AppContextListener - === Application initialized successfully ===
+[2026-05-23 09:45:40] [INFO] filters.AuthFilter - AuthFilter initialized.
+[2026-05-23 09:45:40] [INFO] filters.RoleFilter - RoleFilter initialized.
+[2026-05-23 09:45:41] [INFO] filters.AuthFilter - AuthFilter destroyed.
+[2026-05-23 09:45:41] [INFO] filters.RoleFilter - RoleFilter destroyed.
+[2026-05-23 09:45:41] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Shutting Down ===
+[2026-05-23 09:45:42] [INFO] util.TraceLogger - Trace log initialised: C:\Users\ethan\Documents\NetBeansProjects\ICS2609_FINAL_PROJECT\ICS2609_FINAL_PROJECT\logs\log_20260523.log
+[2026-05-23 09:45:42] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Starting ===
+[2026-05-23 09:45:42] [INFO] listeners.AppContextListener - reCAPTCHA site key loaded: 6Le2Dpos...
+[2026-05-23 09:45:42] [INFO] listeners.AppContextListener - === Application initialized successfully ===
+[2026-05-23 09:45:42] [INFO] filters.AuthFilter - AuthFilter initialized.
+[2026-05-23 09:45:42] [INFO] filters.RoleFilter - RoleFilter initialized.
+[2026-05-23 09:47:15] [INFO] filters.AuthFilter - AuthFilter destroyed.
+[2026-05-23 09:47:15] [INFO] filters.RoleFilter - RoleFilter destroyed.
+[2026-05-23 09:47:15] [INFO] listeners.AppContextListener - === ICS2609 Course Management System — Application Shutting Down ===

@@ -10,12 +10,13 @@
 body {
     width: 100%;
     height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 #background {
     position: absolute;
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
     background-image: url("../images/gradientbg3.png");
     background-repeat: repeat-x;
     background-size: auto 100%;
@@ -64,12 +65,13 @@ body {
 /* -------------------------------------------------main div*/
 .main-container{
     width:100%;
-    height:calc(100vh - 75px);
+    min-height:calc(100vh - 75px);
     display:flex;
     flex-direction:column;
     align-items:center;
     z-index:6;
     position:relative;
+    padding-bottom:30px;
 }
 .main-logo{
     width:760px;
@@ -235,4 +237,28 @@ form{
     width: 1536px;
     bottom: 0px;
     z-index: 5;
+}
+
+/* Short-screen laptops: 1366×768, 1280×800, 1080p at 125% scale (~864px effective) */
+@media (max-height: 800px) {
+    .main-logo {
+        width: 520px;
+        margin-top: 10px;
+    }
+    .login-container {
+        margin-top: -15px;
+        transform: scale(0.74);
+    }
+}
+
+/* Very short viewports: extreme zoom levels or very small panels */
+@media (max-height: 660px) {
+    .main-logo {
+        width: 380px;
+        margin-top: 5px;
+    }
+    .login-container {
+        margin-top: -10px;
+        transform: scale(0.65);
+    }
 }
